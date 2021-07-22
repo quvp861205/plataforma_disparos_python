@@ -1,11 +1,9 @@
 from Library import *
 from Soldier import *
+from Enemy import *
 
 pygame.init()
 
-# Tamaño de la pantalla del juego
-SCREEN_WIDTH = 800
-SCREEN_HEIGHT = int(SCREEN_WIDTH*0.8)
 
 #Configuramos la pantalla
 screen =  pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
@@ -26,8 +24,9 @@ def draw_background():
 x = 200
 y = 200
 scale = 2
-player = Soldier("player", x, y, scale, 5)
-enemy = Soldier("enemy", 400, y, scale, 5)
+player = Soldier("player", x, y, scale, 5, 10)
+enemy = Enemy("enemy", 400, y, scale, 5, 100)
+
 
 #Ciclo del juego y validacion de todos los eventos
 run = True
@@ -37,8 +36,8 @@ while run:
 
     draw_background() #pintamos el fondo
 
-    player.draw(screen) #refrescamos en pantalla al jugador   
-    enemy.draw(screen) 
+    player.update(screen, enemy) #refrescamos en pantalla al jugador     
+    enemy.update(screen)
  
     pygame.draw.line(screen, RED, (0,400),(SCREEN_WIDTH,400))
 
