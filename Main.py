@@ -17,6 +17,7 @@ FPS = 60
 
 #color de fondo
 BG = (144,201,120)
+RED = (255,0,0)
 
 def draw_background():
     screen.fill(BG)
@@ -38,27 +39,22 @@ while run:
 
     player.draw(screen) #refrescamos en pantalla al jugador   
     enemy.draw(screen) 
+ 
+    pygame.draw.line(screen, RED, (0,400),(SCREEN_WIDTH,400))
 
     #Eventos del teclado
     for event in pygame.event.get():        
-        if event.type==pygame.QUIT: #salir del juego
-            run = False
+        if event.type==pygame.QUIT: #salir del juego con la ventana
+            run = False       
 
-        #presionando teclado
+        #salir del juego con escape    
         if event.type==pygame.KEYDOWN:
-            if event.key==pygame.K_a:
-                player.moving_left = True
-            if event.key==pygame.K_d:
-                player.moving_right = True
             if event.key==pygame.K_ESCAPE:
-                run = False
+                run = False 
 
-        #liberando teclado
-        if event.type==pygame.KEYUP:
-            if event.key==pygame.K_a:
-                player.moving_left = False
-            if event.key==pygame.K_d:
-                player.moving_right = False
+        #detectamos eventos teclado del jugador
+        player.detection_keyboard(event)
+        
 
     pygame.display.update()
 
