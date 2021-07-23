@@ -76,6 +76,10 @@ class Enemy(pygame.sprite.Sprite):
         self.idling = False
         self.idling_counter = 0
 
+        self.width = self.image.get_width()
+        self.height = self.image.get_height()
+
+
     #actualizamos la animacion
     def update_animation(self):
         #duracion entre cada fotograma
@@ -139,10 +143,22 @@ class Enemy(pygame.sprite.Sprite):
                 self.vel_y
             dy += self.vel_y
 
-            #verificamos colision
-            if self.rect.bottom+dy>400:
-                dy = 0
-                self.in_air = False
+            #checar por colisiones
+            for tile in self.escenario.obstacle_list:
+                #check collision in the x direction
+                if tile[1].colliderect(self.rect.x + dx, self.rect.y, self.width, self.height):
+                    dx = 0
+                #check for collision in the y direction
+                if tile[1].colliderect(self.rect.x, self.rect.y + dy, self.width, self.height):
+                    #check if below the ground, i.e. jumping
+                    if self.vel_y < 0:
+                        self.vel_y = 0
+                        dy = tile[1].bottom - self.rect.top
+                    #check if above the ground, i.e. falling
+                    elif self.vel_y >= 0:
+                        self.vel_y = 0
+                        self.in_air = False
+                        dy = tile[1].top - self.rect.bottom
 
             self.rect.x += dx
             self.rect.y += dy       
@@ -187,7 +203,7 @@ class Enemy(pygame.sprite.Sprite):
             else:
                 self.direction = 1    
 
-            grenade = Grenade(screen, self.rect.centerx + (0.5*self.rect.size[0]*self.direction), self.rect.top, self.direction, player, None)
+            grenade = Grenade(screen, self.rect.centerx + (0.5*self.rect.size[0]*self.direction), self.rect.top, self.direction, self.escenario)
             self.grenade_group.add(grenade)
             self.ammo_grenade -= 1
 
@@ -254,7 +270,7 @@ class Enemy(pygame.sprite.Sprite):
                 #pygame.draw.rect(screen, RED, self.vision)              
 
                 # cambiar direccion del enemigo
-                if self.move_counter > TILE_SIZE:
+                if self.move_counter > rand.randint(TILE_SIZE, TILE_SIZE*2):
                     self.direction *= -1
                     self.move_counter *= -1
 

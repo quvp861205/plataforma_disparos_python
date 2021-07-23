@@ -1,8 +1,4 @@
 from Library import *
-from Soldier import *
-from Enemy import *
-from ItemBox import *
-from HealthBar import *
 from Escenarios import *
 
 pygame.init()
