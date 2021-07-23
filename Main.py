@@ -24,7 +24,7 @@ def draw_background():
 x = 200
 y = 200
 scale = 2
-player = Soldier("player", x, y, scale, 5, 10)
+player = Soldier("player", x, y, scale, 5, 10, 5)
 enemy = Enemy("enemy", 400, y, scale, 5, 100)
 
 

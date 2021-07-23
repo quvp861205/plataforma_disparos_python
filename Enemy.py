@@ -143,10 +143,10 @@ class Enemy(pygame.sprite.Sprite):
             self.TIME_DEATH_COOLDOWN-=1    
 
     def update(self, screen):
-        self.update_animation() #actualizamos la animacion del monito
-        self.check_alive() #verificamos si estamos vivos          
-        self.move() #movemos a las nuevas coordenadas
-        
         if self.TIME_DEATH_COOLDOWN>0: 
+            self.update_animation() #actualizamos la animacion del monito
+            self.check_alive() #verificamos si estamos vivos          
+            self.move() #movemos a las nuevas coordenadas
+        
             screen.blit(pygame.transform.flip(self.image, self.flip, False), self.rect) #pinta al monito en la pantalla
             

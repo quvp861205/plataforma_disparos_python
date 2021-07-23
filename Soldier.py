@@ -4,9 +4,10 @@ Clase para representar al jugador
 
 from Library import *
 from Bullet import *
+from Grenade import *
 
 class Soldier(pygame.sprite.Sprite):
-    def __init__(self, char_type, x, y, scale, speed, ammo):
+    def __init__(self, char_type, x, y, scale, speed, ammo, ammo_grenade):
         pygame.sprite.Sprite.__init__(self)
 
         self.alive = True #esta vivo
@@ -33,6 +34,13 @@ class Soldier(pygame.sprite.Sprite):
         self.shoot_cooldown = 20
         self.ammo = ammo
         self.start_ammo = self.ammo
+
+        #variables para granada
+        self.grenade = False
+        self.grenade_group = pygame.sprite.Group()
+        self.grenade_cooldown = 50
+        self.ammo_grenade = ammo_grenade
+        self.start_ammo_grenade = self.ammo_grenade
 
         self.animation_types = ["Idle", "Run", "Jump", "Death"] #tipos de animaciones
 
@@ -105,7 +113,8 @@ class Soldier(pygame.sprite.Sprite):
             self.jump = False
             self.update_action(2)   #jump
             presionando_tecla = True    
-            self.in_air = True   
+            self.in_air = True          
+        
         
         if presionando_tecla==False:
             self.update_action(0)   #idle 
@@ -135,7 +144,9 @@ class Soldier(pygame.sprite.Sprite):
             if event.key==pygame.K_w:
                 self.jump = True  
             if event.key==pygame.K_SPACE:
-                self.shoot = True            
+                self.shoot = True   
+            if event.key==pygame.K_q:
+                self.grenade = True            
 
         #liberando teclado
         if event.type==pygame.KEYUP:
@@ -147,6 +158,8 @@ class Soldier(pygame.sprite.Sprite):
                 self.jump = False
             if event.key==pygame.K_SPACE:
                 self.shoot = False 
+            if event.key==pygame.K_q:
+                self.grenade = False 
 
     #acccion disparar
     def update_shoot(self, screen, group_enemy):    
@@ -171,6 +184,27 @@ class Soldier(pygame.sprite.Sprite):
         if pygame.sprite.spritecollide(group_enemy, self.bullet_group, True):
              group_enemy.health -= 20
 
+    def update_grenade(self, screen, group_enemy):
+        #vamos retrociendo el temporizador entre cada bala, es de 20 ciclos
+        if self.grenade_cooldown > 0:
+            self.grenade_cooldown -= 1
+
+        #si temporizador paso 20 ciclos y hay balas,entonces agregamos una nueva bala
+        if self.grenade and self.grenade_cooldown==0 and self.ammo_grenade>0: 
+            self.grenade_cooldown = 100            
+            grenade = Grenade(self.rect.centerx + (0.5*self.rect.size[0]*self.direction), self.rect.top, self.direction)
+            self.grenade_group.add(grenade)
+            self.ammo_grenade -= 1
+
+        #actualizamos cada bala
+        self.grenade_group.update()
+        #pintamos cada bala
+        self.grenade_group.draw(screen)    
+
+        #colision de soldado y bala
+        if pygame.sprite.spritecollide(group_enemy, self.grenade_group, True):
+             group_enemy.health -= 50
+
     
     def check_alive(self):
         if self.health <= 0:
@@ -182,8 +216,8 @@ class Soldier(pygame.sprite.Sprite):
     def update(self, screen, group_enemy):
         self.update_animation() #actualizamos la animacion del monito
         self.check_alive() #verificamos si estamos vivos
-
         self.update_shoot(screen, group_enemy) #verificamos los disparos
+        self.update_grenade(screen, group_enemy) #verificamos las granadas
         
         self.move() #movemos a las nuevas coordenadas
         
