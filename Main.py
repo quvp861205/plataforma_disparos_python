@@ -1,6 +1,8 @@
 from Library import *
 from Soldier import *
 from Enemy import *
+from ItemBox import *
+from HealthBar import *
 
 pygame.init()
 
@@ -24,8 +26,27 @@ def draw_background():
 x = 200
 y = 200
 scale = 2
+
+#jugador
 player = Soldier("player", x, y, scale, 5, 10, 5)
-enemy = Enemy("enemy", 400, y, scale, 5, 100)
+
+#grupo de enemigos
+group_enemy = pygame.sprite.Group()
+group_enemy.add(Enemy("enemy", 400, y, scale, 5, 100))
+group_enemy.add(Enemy("enemy", 420, y, scale, 5, 100))
+
+#Items para aumentar ammo, health and grenades
+item_box_group = pygame.sprite.Group()
+item_box = ItemBox(player, 'Health', 100, 260)
+item_box_group.add(item_box)
+item_box = ItemBox(player, 'Ammo', 400, 260)
+item_box_group.add(item_box)
+item_box = ItemBox(player, 'Grenade', 500, 260)
+item_box_group.add(item_box)
+
+
+#barras de puntuaciones
+health_bar = HealthBar(screen, 10, 10, player)
 
 
 #Ciclo del juego y validacion de todos los eventos
@@ -36,8 +57,11 @@ while run:
 
     draw_background() #pintamos el fondo
 
-    player.update(screen, enemy) #refrescamos en pantalla al jugador     
-    enemy.update(screen)
+    player.update(screen, group_enemy) #refrescamos en pantalla al jugador     
+    group_enemy.update(screen)
+    item_box_group.update()
+    item_box_group.draw(screen)
+    health_bar.draw()
  
     pygame.draw.line(screen, RED, (0,400),(SCREEN_WIDTH,400))
 

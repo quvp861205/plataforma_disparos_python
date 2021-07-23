@@ -77,6 +77,7 @@ class Enemy(pygame.sprite.Sprite):
         if self.frame_index>=len(self.animation_list[self.action]): #validar que no se salga de los limites
             if self.alive==False: #si ya no esta vivo, solo se ejecuta 1 vez la animacion
                 self.frame_index -= 1
+                self.kill()
             else:
                 self.frame_index = 0 # vuelve hacer loop la animacion
 
@@ -136,11 +137,10 @@ class Enemy(pygame.sprite.Sprite):
             self.health = 0
             self.speed = 0
             self.alive = False
-            self.update_action(3)
-            self.kill()
+            self.update_action(3)            
         
         if self.TIME_DEATH_COOLDOWN>0 and self.health <= 0:
-            self.TIME_DEATH_COOLDOWN-=1    
+            self.TIME_DEATH_COOLDOWN-=1
 
     def update(self, screen):
         if self.TIME_DEATH_COOLDOWN>0: 
