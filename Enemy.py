@@ -7,9 +7,10 @@ from Bullet import *
 from Grenade import *
 
 class Enemy(pygame.sprite.Sprite):
-    def __init__(self, char_type, x, y, scale, speed, ammo):
+    def __init__(self, escenario, char_type, x, y, scale, speed, ammo):
         pygame.sprite.Sprite.__init__(self)
 
+        self.escenario = escenario
         self.alive = True #esta vivo
         self.health = 20 #salud actual
         self.max_health = self.health #salud maxima
@@ -289,7 +290,7 @@ class Enemy(pygame.sprite.Sprite):
         if self.TIME_DEATH_COOLDOWN>0: 
             self.update_animation() #actualizamos la animacion del monito
             self.check_alive() #verificamos si estamos vivos   
-            self.ai(screen, player)       
+            self.ai(self.escenario.screen, self.escenario.player)       
             
         
             screen.blit(pygame.transform.flip(self.image, self.flip, False), self.rect) #pinta al monito en la pantalla

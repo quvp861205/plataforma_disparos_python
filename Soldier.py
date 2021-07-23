@@ -7,11 +7,12 @@ from Bullet import *
 from Grenade import *
 
 class Soldier(pygame.sprite.Sprite):
-    def __init__(self, char_type, x, y, scale, speed, ammo, ammo_grenade):
+    def __init__(self, escenario, char_type, x, y, scale, speed, ammo, ammo_grenade):
         pygame.sprite.Sprite.__init__(self)
 
+        self.escenario = escenario
         self.alive = True #esta vivo
-        self.health = 50
+        self.health = 100
         self.max_health = self.health
         self.TIME_DEATH_COOLDOWN = 100 #duracion del jugador ya muerto antes que dezaparesca
 
@@ -188,7 +189,7 @@ class Soldier(pygame.sprite.Sprite):
         self.bullet_group.draw(screen) 
        
 
-    def update_grenade(self, screen, group_enemy):
+    def update_grenade(self, screen, enemy_group):
         #vamos retrociendo el temporizador entre cada bala, es de 20 ciclos
         if self.grenade_cooldown > 0:
             self.grenade_cooldown -= 1
@@ -196,7 +197,7 @@ class Soldier(pygame.sprite.Sprite):
         #si temporizador paso 20 ciclos y hay balas,entonces agregamos una nueva bala
         if self.grenade and self.grenade_cooldown==0 and self.ammo_grenade>0: 
             self.grenade_cooldown = 100            
-            grenade = Grenade(screen, self.rect.centerx + (0.5*self.rect.size[0]*self.direction), self.rect.top, self.direction, self, group_enemy)
+            grenade = Grenade(self.escenario.screen, self.rect.centerx + (0.5*self.rect.size[0]*self.direction), self.rect.top, self.direction, self, enemy_group)
             self.grenade_group.add(grenade)
             self.ammo_grenade -= 1
 
@@ -222,8 +223,8 @@ class Soldier(pygame.sprite.Sprite):
         if self.TIME_DEATH_COOLDOWN>0: 
             self.update_animation() #actualizamos la animacion del monito
             self.check_alive() #verificamos si estamos vivos
-            self.update_shoot(screen, group_enemy) #verificamos los disparos
-            self.update_grenade(screen, group_enemy) #verificamos las granadas
+            self.update_shoot(self.escenario.screen, self.escenario.enemy_group) #verificamos los disparos
+            self.update_grenade(self.escenario.screen, self.escenario.enemy_group) #verificamos las granadas
             
             self.move() #movemos a las nuevas coordenadas
         

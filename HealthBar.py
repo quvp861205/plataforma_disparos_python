@@ -1,13 +1,13 @@
 from Library import *
-pygame.font.init()
 
 
 class HealthBar():
-    def __init__(self, screen, x, y, player):
+    def __init__(self, escenario, x, y):
         self.x = x
         self.y = y
-        self.player = player
-        self.screen = screen
+        self.player = escenario.player
+        self.screen = escenario.screen
+        self.health = 0
 
         #bullet
         self.bullet_img = pygame.image.load('img/icons/bullet.png').convert_alpha()
