@@ -25,7 +25,7 @@ def draw_background():
 
 x = 200
 y = 200
-scale = 2
+scale = 1.65
 
 #jugador
 player = Soldier("player", x, y, scale, 5, 10, 5)
@@ -58,7 +58,7 @@ while run:
     draw_background() #pintamos el fondo
 
     player.update(screen, group_enemy) #refrescamos en pantalla al jugador     
-    group_enemy.update(screen)
+    group_enemy.update(screen, player)
     item_box_group.update()
     item_box_group.draw(screen)
     health_bar.draw()

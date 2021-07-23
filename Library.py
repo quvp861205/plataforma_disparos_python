@@ -2,6 +2,7 @@ from pygame.locals import *
 from pygame.rect import *
 from pygame.sprite import *
 from pygame.font import *
+import random as rand 
 import os
 
 # Tamaño de la pantalla del juego

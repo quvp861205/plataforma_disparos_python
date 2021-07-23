@@ -54,7 +54,7 @@ class Soldier(pygame.sprite.Sprite):
             #cargamos todas las imagenes del soldado moviendose estatico
             for i in range(num_of_frames):
                 self.image = pygame.image.load(f'img/{self.char_type}/{animation}/{i}.png') #carga la imagen del monito
-                self.image = pygame.transform.scale(self.image, (self.image.get_width()*scale, self.image.get_height()*scale)) #hace al monito mas grande
+                self.image = pygame.transform.scale(self.image, (int(self.image.get_width()*scale), int(self.image.get_height()*scale))) #hace al monito mas grande
                 temp_list.append(self.image)
             self.animation_list.append(temp_list)       
      
@@ -133,7 +133,7 @@ class Soldier(pygame.sprite.Sprite):
         dy += self.vel_y
 
         #verificamos colision
-        if self.rect.bottom+dy>400:
+        if self.rect.bottom+dy>403:
             dy = 0
             self.in_air = False
 

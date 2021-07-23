@@ -4,6 +4,7 @@ Clase para representar al jugador
 
 from Library import *
 from Bullet import *
+from Grenade import *
 
 class Enemy(pygame.sprite.Sprite):
     def __init__(self, char_type, x, y, scale, speed, ammo):
@@ -35,6 +36,13 @@ class Enemy(pygame.sprite.Sprite):
         self.ammo = ammo
         self.start_ammo = self.ammo
 
+        #variables para granada
+        self.grenade = False
+        self.grenade_group = pygame.sprite.Group()        
+        self.grenade_cooldown = 50
+        self.ammo_grenade = 3
+        self.start_ammo_grenade = self.ammo_grenade
+
         self.animation_types = ["Idle", "Run", "Jump", "Death"] #tipos de animaciones
 
         #cargamos todas las animaciones
@@ -45,7 +53,7 @@ class Enemy(pygame.sprite.Sprite):
             #cargamos todas las imagenes del soldado moviendose estatico
             for i in range(num_of_frames):
                 self.image = pygame.image.load(f'img/{self.char_type}/{animation}/{i}.png') #carga la imagen del monito
-                self.image = pygame.transform.scale(self.image, (self.image.get_width()*scale, self.image.get_height()*scale)) #hace al monito mas grande
+                self.image = pygame.transform.scale(self.image, (int(self.image.get_width()*scale), int(self.image.get_height()*scale))) #hace al monito mas grande
                 temp_list.append(self.image)
             self.animation_list.append(temp_list)       
      
@@ -60,6 +68,12 @@ class Enemy(pygame.sprite.Sprite):
         self.moving_left = False #moviendose a la izquierda
         self.moving_right = False #moviendose a la derecha
         self.speed = speed #velocidad del movimiento
+
+        #variables para la inteligencia artificial
+        self.move_counter = 0
+        self.vision = pygame.Rect(0, 0, 150, 20)
+        self.idling = False
+        self.idling_counter = 0
 
     #actualizamos la animacion
     def update_animation(self):
@@ -115,7 +129,7 @@ class Enemy(pygame.sprite.Sprite):
                 sin_movimiento = True    
                 self.in_air = True   
             
-            if sin_movimiento==False:
+            if sin_movimiento==False:                
                 self.update_action(0)   #idle 
 
             #aplicamos brinco y gravedad
@@ -130,7 +144,56 @@ class Enemy(pygame.sprite.Sprite):
                 self.in_air = False
 
             self.rect.x += dx
-            self.rect.y += dy    
+            self.rect.y += dy       
+
+    
+    #acccion disparar
+    def update_shoot(self, screen, player):    
+
+        #vamos retrociendo el temporizador entre cada bala, es de 20 ciclos
+        if self.shoot_cooldown > 0:
+            self.shoot_cooldown -= 1
+
+        #si temporizador paso 20 ciclos y hay balas,entonces agregamos una nueva bala
+        if self.shoot and self.shoot_cooldown==0 and self.ammo>0: 
+            self.shoot_cooldown = 20 
+
+            if self.rect.x > player.rect.x:
+                self.direction = -1
+            else:
+                self.direction = 1             
+            
+            bullet = Bullet(self.rect.centerx + (0.6*self.rect.size[0]*self.direction), self.rect.centery, self.direction, player)
+            self.bullet_group.add(bullet)
+            self.ammo -= 1
+
+        #actualizamos cada bala
+        self.bullet_group.update()
+        #pintamos cada bala
+        self.bullet_group.draw(screen) 
+
+    def update_grenade(self, screen, player):
+        #vamos retrociendo el temporizador entre cada bala, es de 20 ciclos
+        if self.grenade_cooldown > 0:
+            self.grenade_cooldown -= 1
+
+        #si temporizador paso 20 ciclos y hay balas,entonces agregamos una nueva bala
+        if self.grenade and self.grenade_cooldown==0 and self.ammo_grenade>0: 
+            self.grenade_cooldown = 100   
+
+            if self.rect.x > player.rect.x:
+                self.direction = -1
+            else:
+                self.direction = 1    
+
+            grenade = Grenade(screen, self.rect.centerx + (0.5*self.rect.size[0]*self.direction), self.rect.top, self.direction, player, None)
+            self.grenade_group.add(grenade)
+            self.ammo_grenade -= 1
+
+        #actualizamos cada granada
+        self.grenade_group.update()
+        #pintamos cada granada
+        self.grenade_group.draw(screen)
     
     def check_alive(self):
         if self.health <= 0 and self.alive==True:
@@ -142,11 +205,92 @@ class Enemy(pygame.sprite.Sprite):
         if self.TIME_DEATH_COOLDOWN>0 and self.health <= 0:
             self.TIME_DEATH_COOLDOWN-=1
 
-    def update(self, screen):
+    def ai(self, screen, player):
+        if self.alive:
+            
+            # poner al enemigo en modo parado aleatoriamente
+            if rand.randint(1,10000)>=9970 and self.idling==False:
+                self.idling = True
+                self.idling_counter = rand.randrange(50, 200)
+                self.moving_left = False
+                self.moving_right = False
+                self.update_action(0)
+            
+            #validamos si la vision del enemigo alcanza a la del jugador y dispara
+            if self.vision.colliderect(player.rect):
+                self.idling = True
+                self.idling_counter = rand.randrange(50, 200)
+                self.moving_left = False
+                self.moving_right = False
+                self.update_action(0)
+                self.shoot = True
+
+            # si el enemigo esta caminando
+            if self.idling==False:
+
+                # asignar el movimiento izquierda o derecha dependiendo de la direccion
+                if self.direction==1:
+                    self.moving_right = True
+                else:
+                    self.moving_right = False
+                self.moving_left = not self.moving_right
+
+                # asignar brinco aleatoriamente
+                if rand.randrange(1,100,1)>=99:
+                    self.jump = True
+                else:
+                    self.jump = False
+
+                self.move() #movemos a las nuevas coordenadas
+                
+                self.jump = False
+
+                # contador para cambiar de direccion al enemigo
+                self.move_counter += 1
+
+                # asignamos un rectangulo como la vista del enemigo
+                self.vision.center = (self.rect.centerx + 75 * self.direction, self.rect.centery)
+                #pygame.draw.rect(screen, RED, self.vision)              
+
+                # cambiar direccion del enemigo
+                if self.move_counter > TILE_SIZE:
+                    self.direction *= -1
+                    self.move_counter *= -1
+
+            # si enemigo esta parado nomas
+            else:
+                
+                # conteo del temporizador para que vuelva a caminar
+                self.idling_counter -=1
+
+                self.move() # movemos a las nuevas coordenadas
+                
+                # se cancela el descanso del enemigo
+                if self.idling_counter<=0:
+                    self.idling = False
+            
+            # disparo aleatorio
+            if abs(player.rect.x - self.rect.x)< 400:
+                if rand.randint(1,10000)>=9980:
+                    self.shoot = True                    
+            
+            # granada aleatoria
+            if abs(player.rect.x - self.rect.x)< 100:
+                if rand.randint(1,10000)>=9980:
+                    self.grenade = True
+            
+            self.update_shoot(screen, player) 
+            self.update_grenade(screen, player)
+            self.shoot = False
+            self.grenade = False
+
+
+    def update(self, screen, player):
         if self.TIME_DEATH_COOLDOWN>0: 
             self.update_animation() #actualizamos la animacion del monito
-            self.check_alive() #verificamos si estamos vivos          
-            self.move() #movemos a las nuevas coordenadas
+            self.check_alive() #verificamos si estamos vivos   
+            self.ai(screen, player)       
+            
         
             screen.blit(pygame.transform.flip(self.image, self.flip, False), self.rect) #pinta al monito en la pantalla
             

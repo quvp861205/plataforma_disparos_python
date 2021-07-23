@@ -55,17 +55,18 @@ class Grenade(pygame.sprite.Sprite):
             explosion.update()            
             
             if self.yaExploto==False:
-                for enemy in self.group_enemy:
-                    if abs(self.rect.centerx - enemy.rect.centerx) < TILE_SIZE * 2 and \
-                        abs(self.rect.centery - enemy.rect.centery) < TILE_SIZE * 2:
-                        health = enemy.health
-                        enemy.health -= self.damage
-                        if self.damage>health:
-                            self.damage -= health
-                        else:
-                            self.damage = 0
+                if self.group_enemy!=None:
+                    for enemy in self.group_enemy:
+                        if abs(self.rect.centerx - enemy.rect.centerx) < TILE_SIZE * 2 and \
+                            abs(self.rect.centery - enemy.rect.centery) < TILE_SIZE * 2:
+                            health = enemy.health
+                            enemy.health -= self.damage
+                            if self.damage>health:
+                                self.damage -= health
+                            else:
+                                self.damage = 0
 
-                        print('enemigo herido con granada, health['+str(health)+' -> '+str(enemy.health)+']')
+                            print('enemigo herido con granada, health['+str(health)+' -> '+str(enemy.health)+']')
 
                 
                 if abs(self.rect.centerx - self.player.rect.centerx) < TILE_SIZE * 2 and \
