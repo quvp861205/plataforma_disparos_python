@@ -12,14 +12,6 @@ pygame.display.set_caption('Shooter')
 clock = pygame.time.Clock()
 FPS = 60
 
-#color de fondo
-BG = (144,201,120)
-RED = (255,0,0)
-
-def draw_background():
-    screen.fill(BG)
-
-
 escena = Escenarios(screen)
 escena.process_data()
 
@@ -29,8 +21,6 @@ run = True
 while run:
 
     clock.tick(FPS) #relentizamos el juego a 60 frames por second
-
-    draw_background() #pintamos el fondo
 
     escena.draw()
 

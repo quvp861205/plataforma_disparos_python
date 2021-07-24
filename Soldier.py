@@ -142,24 +142,38 @@ class Soldier(pygame.sprite.Sprite):
 
         #checar por colisiones
         for tile in self.escenario.obstacle_list:
-            #check collision in the x direction
+            #colisiones por x
             if tile[1].colliderect(self.rect.x + dx, self.rect.y, self.width, self.height):
                 dx = 0
-            #check for collision in the y direction
+            #colisiones por y
             if tile[1].colliderect(self.rect.x, self.rect.y + dy, self.width, self.height):
-                #check if below the ground, i.e. jumping
+                #colisiones por la parte de arriba
                 if self.vel_y < 0:
                     self.vel_y = 0
                     dy = tile[1].bottom - self.rect.top
-                #check if above the ground, i.e. falling
+                #colisiones por la parte de abajo
                 elif self.vel_y >= 0:
                     self.vel_y = 0
                     self.in_air = False
                     dy = tile[1].top - self.rect.bottom
 
+
+        # para que no se salga de los limites de la pantalla
+        if self.rect.left + dx < 0 or self.rect.right + dx > SCREEN_WIDTH:
+            dx = 0
+
         self.rect.x += dx
         self.rect.y += dy
-    
+  
+        # actualizamos el scroll del mapa si se acerca a los limites de la pantallas
+        # tambien se valida que si llega al final o al inicio se detenga el scroll
+        if (self.rect.right>SCREEN_WIDTH-self.escenario.scroll_thresh) and (self.escenario.bg_scroll<(self.escenario.level_length*TILE_SIZE)-SCREEN_WIDTH)\
+        or (self.rect.left<self.escenario.scroll_thresh and self.escenario.bg_scroll>abs(dx)):
+            self.rect.x -= dx
+            self.escenario.screen_scroll = -dx
+        else:
+            self.escenario.screen_scroll = 0
+
     def detection_keyboard(self, event):
        
         #presionando teclado
@@ -189,7 +203,7 @@ class Soldier(pygame.sprite.Sprite):
                 self.grenade = False 
 
     #acccion disparar
-    def update_shoot(self, screen, group_enemy):    
+    def update_shoot(self):    
 
         #vamos retrociendo el temporizador entre cada bala, es de 20 ciclos
         if self.shoot_cooldown > 0:
@@ -198,14 +212,14 @@ class Soldier(pygame.sprite.Sprite):
         #si temporizador paso 20 ciclos y hay balas,entonces agregamos una nueva bala
         if self.shoot and self.shoot_cooldown==0 and self.ammo>0: 
             self.shoot_cooldown = 20            
-            bullet = Bullet(self.rect.centerx + (0.6*self.rect.size[0]*self.direction), self.rect.centery, self.direction, group_enemy)
+            bullet = Bullet(self.escenario, self.rect.centerx + (0.13*self.rect.x*self.direction), self.rect.centery, self.direction, self)
             self.bullet_group.add(bullet)
             self.ammo -= 1
 
         #actualizamos cada bala
         self.bullet_group.update()
         #pintamos cada bala
-        self.bullet_group.draw(screen) 
+        self.bullet_group.draw(self.escenario.screen) 
        
 
     def update_grenade(self):
@@ -216,7 +230,7 @@ class Soldier(pygame.sprite.Sprite):
         #si temporizador paso 20 ciclos y hay balas,entonces agregamos una nueva bala
         if self.grenade and self.grenade_cooldown==0 and self.ammo_grenade>0: 
             self.grenade_cooldown = 100            
-            grenade = Grenade(self.escenario.screen, self.rect.centerx + (0.5*self.rect.size[0]*self.direction), self.rect.top, self.direction, self.escenario)
+            grenade = Grenade(self.escenario, self.rect.centerx + (0.5*self.rect.size[0]*self.direction), self.rect.top, self.direction)
             self.grenade_group.add(grenade)
             self.ammo_grenade -= 1
 
@@ -225,7 +239,7 @@ class Soldier(pygame.sprite.Sprite):
         #pintamos cada granada
         self.grenade_group.draw(self.escenario.screen)
 
-    
+    # validamos si sigue con vida
     def check_alive(self):
         if self.health <= 0:
             self.health = 0
@@ -237,14 +251,14 @@ class Soldier(pygame.sprite.Sprite):
             self.TIME_DEATH_COOLDOWN-=1            
 
 
-    def update(self, screen, group_enemy):
+    def update(self):
 
         if self.TIME_DEATH_COOLDOWN>0: 
             self.update_animation() #actualizamos la animacion del monito
             self.check_alive() #verificamos si estamos vivos
-            self.update_shoot(self.escenario.screen, self.escenario.enemy_group) #verificamos los disparos
+            self.update_shoot() #verificamos los disparos
             self.update_grenade() #verificamos las granadas
             
             self.move() #movemos a las nuevas coordenadas
         
-        screen.blit(pygame.transform.flip(self.image, self.flip, False), self.rect) #pinta al monito en la pantalla
+        self.escenario.screen.blit(pygame.transform.flip(self.image, self.flip, False), self.rect) #pinta al monito en la pantalla

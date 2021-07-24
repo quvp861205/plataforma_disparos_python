@@ -2,8 +2,11 @@ from Library import *
 from Soldier import *
 
 class Bullet(pygame.sprite.Sprite):
-    def __init__(self, x, y, direction, group_enemy):
+    def __init__(self, escenario, x, y, direction, origen):
         pygame.sprite.Sprite.__init__(self)
+
+        self.escenario = escenario
+        self.origen = origen # permite saber quien esta disparando para que no se dañe asi mismo
 
         self.grenade_img = pygame.image.load(f'img/icons/bullet.png')
 
@@ -14,39 +17,65 @@ class Bullet(pygame.sprite.Sprite):
         self.rect.center = (x,y)
         self.direction = direction
         self.explosion = False
-        self.group_enemy = group_enemy
+        self.group_enemy = self.escenario.enemy_group
+        self.width = self.image.get_width()
+        self.height = self.image.get_height()
 
 
-    def update(self):
-        #colision de soldado y bala
+    def update(self):        
 
-        if str(type(self.group_enemy))=="<class 'Soldier.Soldier'>":
-            player = self.group_enemy
-            self.group_enemy = pygame.sprite.Group()
-            self.group_enemy.add(player)
-
-        for enemy in self.group_enemy:            
-            if pygame.sprite.collide_rect(enemy, self):
+        # validacion de colision bala y jugador
+        player = self.escenario.player
+        if pygame.sprite.collide_rect(player, self) and player!=self.origen:
                 
-                if enemy.health>0:
-                    health =  enemy.health
+            if player.health>0:
+                health = player.health
 
-                    #descontamos sangre al enemigo
-                    enemy.health -= self.damage
-                    print('enemigo herido con bala, health['+str(health)+' -> '+str(enemy.health)+']')
+                #descontamos sangre al jugador
+                player.health -= self.damage
+                print(player.char_type+ ' herido con bala, health['+str(health)+' -> '+str(player.health)+']')
 
-                    #descontamos potencia a la bala
-                    if self.damage>health:
-                        self.damage -= health 
-                    else: 
-                        self.damage = 0
+                # descontamos potencia a la bala
+                if self.damage>health:
+                    self.damage -= health 
+                else: 
+                    self.damage = 0
+                
+                if self.damage<=0:
+                    self.explosion = True
+
+        # validacion de colision bala y enemigo
+        if self.explosion==False:
+            for enemy in self.group_enemy:            
+                if pygame.sprite.collide_rect(enemy, self) and enemy!=self.origen:
                     
-                    if self.damage<=0:
-                        self.explosion = True
+                    if enemy.health>0:
+                        health = enemy.health
+
+                        #descontamos sangre al enemigo
+                        enemy.health -= self.damage
+                        print(enemy.char_type+ ' herido con bala, health['+str(health)+' -> '+str(enemy.health)+']')
+
+                        #descontamos potencia a la bala
+                        if self.damage>health:
+                            self.damage -= health 
+                        else: 
+                            self.damage = 0
+                        
+                        if self.damage<=0:
+                            self.explosion = True
+        
+        if self.explosion==False:
+            for obstacle in self.escenario.obstacle_list:            
+                if obstacle[1].colliderect(self.rect.x,\
+                     self.rect.y, self.width, self.height):
+
+                     self.explosion = True
+                     self.damage = 0   
                                             
 
         if self.explosion==False:
-            self.rect.x += (self.direction * self.speed)
+            self.rect.x += (self.direction * self.speed) + self.escenario.screen_scroll
 
             if self.rect.right<0 or self.rect.left>SCREEN_WIDTH:
                 self.kill()  

@@ -18,11 +18,12 @@ GREEN = (0, 255, 0)
 BLACK = (0, 0, 0)
 RED = (255,0,0)
 
-COLS = 150
-ROWS = 16
+COLS = 150 # numero de columnas que divide la pantalla
+ROWS = 16 # numero de registros que divide la pantalla
 TILE_SIZE = SCREEN_HEIGHT // ROWS
 Level = 1
 TILE_TYPES = 21
+
 
 pygame.font.init()
 font = pygame.font.SysFont('Futura', 30, bold=False, italic=False)

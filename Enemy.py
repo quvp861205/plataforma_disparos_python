@@ -148,6 +148,8 @@ class Enemy(pygame.sprite.Sprite):
                 #check collision in the x direction
                 if tile[1].colliderect(self.rect.x + dx, self.rect.y, self.width, self.height):
                     dx = 0
+                    self.direction *= -1 # enemigo topa con pared, hacemos que se gire
+                    self.move_counter = 0
                 #check for collision in the y direction
                 if tile[1].colliderect(self.rect.x, self.rect.y + dy, self.width, self.height):
                     #check if below the ground, i.e. jumping
@@ -161,11 +163,10 @@ class Enemy(pygame.sprite.Sprite):
                         dy = tile[1].top - self.rect.bottom
 
             self.rect.x += dx
-            self.rect.y += dy       
-
+            self.rect.y += dy 
     
     #acccion disparar
-    def update_shoot(self, screen, player):    
+    def update_shoot(self):    
 
         #vamos retrociendo el temporizador entre cada bala, es de 20 ciclos
         if self.shoot_cooldown > 0:
@@ -174,43 +175,34 @@ class Enemy(pygame.sprite.Sprite):
         #si temporizador paso 20 ciclos y hay balas,entonces agregamos una nueva bala
         if self.shoot and self.shoot_cooldown==0 and self.ammo>0: 
             self.shoot_cooldown = 20 
-
-            if self.rect.x > player.rect.x:
-                self.direction = -1
-            else:
-                self.direction = 1             
             
-            bullet = Bullet(self.rect.centerx + (0.6*self.rect.size[0]*self.direction), self.rect.centery, self.direction, player)
+            bullet = Bullet(self.escenario, self.rect.centerx + (0.6*self.rect.size[0]*self.direction), self.rect.centery, self.direction, self)
             self.bullet_group.add(bullet)
             self.ammo -= 1
 
         #actualizamos cada bala
         self.bullet_group.update()
         #pintamos cada bala
-        self.bullet_group.draw(screen) 
+        self.bullet_group.draw(self.escenario.screen) 
 
-    def update_grenade(self, screen, player):
+    def update_grenade(self):
         #vamos retrociendo el temporizador entre cada bala, es de 20 ciclos
         if self.grenade_cooldown > 0:
             self.grenade_cooldown -= 1
 
         #si temporizador paso 20 ciclos y hay balas,entonces agregamos una nueva bala
         if self.grenade and self.grenade_cooldown==0 and self.ammo_grenade>0: 
-            self.grenade_cooldown = 100   
+            self.grenade_cooldown = 100 
 
-            if self.rect.x > player.rect.x:
-                self.direction = -1
-            else:
-                self.direction = 1    
-
-            grenade = Grenade(screen, self.rect.centerx + (0.5*self.rect.size[0]*self.direction), self.rect.top, self.direction, self.escenario)
+           
+            grenade = Grenade(self.escenario, self.rect.centerx + (0.5*self.rect.size[0]*self.direction), self.rect.top, self.direction)
             self.grenade_group.add(grenade)
             self.ammo_grenade -= 1
 
         #actualizamos cada granada
         self.grenade_group.update()
         #pintamos cada granada
-        self.grenade_group.draw(screen)
+        self.grenade_group.draw(self.escenario.screen)
     
     def check_alive(self):
         if self.health <= 0 and self.alive==True:
@@ -222,7 +214,7 @@ class Enemy(pygame.sprite.Sprite):
         if self.TIME_DEATH_COOLDOWN>0 and self.health <= 0:
             self.TIME_DEATH_COOLDOWN-=1
 
-    def ai(self, screen, player):
+    def ai(self):
         if self.alive:
             
             # poner al enemigo en modo parado aleatoriamente
@@ -234,9 +226,9 @@ class Enemy(pygame.sprite.Sprite):
                 self.update_action(0)
             
             #validamos si la vision del enemigo alcanza a la del jugador y dispara
-            if self.vision.colliderect(player.rect):
+            if self.vision.colliderect(self.escenario.player.rect):
                 self.idling = True
-                self.idling_counter = rand.randrange(50, 200)
+                self.idling_counter = rand.randrange(20, 40)
                 self.moving_left = False
                 self.moving_right = False
                 self.update_action(0)
@@ -287,27 +279,30 @@ class Enemy(pygame.sprite.Sprite):
                     self.idling = False
             
             # disparo aleatorio
-            if abs(player.rect.x - self.rect.x)< 400:
+            if abs(self.escenario.player.rect.x - self.rect.x)< 400:
                 if rand.randint(1,10000)>=9980:
-                    self.shoot = True                    
+                    self.shoot = True
             
             # granada aleatoria
-            if abs(player.rect.x - self.rect.x)< 100:
+            if abs(self.escenario.player.rect.x - self.rect.x)< 100:
                 if rand.randint(1,10000)>=9980:
                     self.grenade = True
             
-            self.update_shoot(screen, player) 
-            self.update_grenade(screen, player)
+            self.update_shoot() 
+            self.update_grenade()
             self.shoot = False
             self.grenade = False
+        
+        
+        # aplicamos el scroll al enemigo
+        self.rect.x += self.escenario.screen_scroll
 
 
-    def update(self, screen, player):
+    def update(self):
         if self.TIME_DEATH_COOLDOWN>0: 
             self.update_animation() #actualizamos la animacion del monito
             self.check_alive() #verificamos si estamos vivos   
-            self.ai(self.escenario.screen, self.escenario.player)       
-            
+            self.ai()           
         
-            screen.blit(pygame.transform.flip(self.image, self.flip, False), self.rect) #pinta al monito en la pantalla
+            self.escenario.screen.blit(pygame.transform.flip(self.image, self.flip, False), self.rect) #pinta al monito en la pantalla
             

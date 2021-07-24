@@ -1,8 +1,10 @@
 from Library import *
 
 class Explosion(pygame.sprite.Sprite):
-    def __init__(self, screen, x, y, scale):
+    def __init__(self, escenario, x, y, scale):
         pygame.sprite.Sprite.__init__(self)
+
+        self.escenario = escenario
 
         self.images = []
 
@@ -18,7 +20,7 @@ class Explosion(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.center = (x, y)
         self.counter = 0
-        self.screen = screen
+        self.screen = self.escenario.screen
 
 
     def update(self):
@@ -35,5 +37,7 @@ class Explosion(pygame.sprite.Sprite):
             else:
                 self.image = self.images[self.frame_index]
         
+        self.rect.x += self.escenario.screen_scroll
+
         self.screen.blit(self.image, self.rect)
 

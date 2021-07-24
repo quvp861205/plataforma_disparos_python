@@ -2,7 +2,7 @@ from Library import *
 from Explosion import *
 
 class Grenade(pygame.sprite.Sprite):
-    def __init__(self, screen, x, y, direction, escenario):
+    def __init__(self, escenario, x, y, direction):
         pygame.sprite.Sprite.__init__(self)
 
         self.escenario = escenario
@@ -21,7 +21,7 @@ class Grenade(pygame.sprite.Sprite):
 
         self.direction = direction
         self.yaExploto = False
-        self.screen = screen
+        self.screen = self.escenario.screen
 
         self.width = self.image.get_width()
         self.height = self.image.get_height()
@@ -64,7 +64,7 @@ class Grenade(pygame.sprite.Sprite):
             self.kill()
 
             # y creamos el sprite de explosion
-            explosion = Explosion(self.screen, self.rect.x, self.rect.y, 0.5)
+            explosion = Explosion(self.escenario, self.rect.x, self.rect.y, 0.5)
             explosion.update()            
             
             if self.yaExploto==False:
@@ -93,6 +93,8 @@ class Grenade(pygame.sprite.Sprite):
 
                         print('jugador herido con granada, health['+str(health)+' -> '+str(self.escenario.player.health)+']')
 
-            self.yaExploto = True            
+            self.yaExploto = True  
+
+        self.rect.x += self.escenario.screen_scroll          
             
 

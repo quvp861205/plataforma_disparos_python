@@ -1,20 +1,17 @@
 from Library import *
 
 class ItemBox(pygame.sprite.Sprite):
-    def __init__(self, player, item_type, x, y):
+    def __init__(self, escenario, item_type, x, y):
         pygame.sprite.Sprite.__init__(self)
 
-        self.bullet_img = pygame.image.load(f'img/icons/grenade.png')
+        self.escenario = escenario
+
 
         self.item_type = item_type
         self.x = x 
         self.y = y
-        self.player = player
-        
-        #bullet
-        bullet_img = pygame.image.load('img/icons/bullet.png').convert_alpha()
-        #grenade
-        grenade_img = pygame.image.load('img/icons/grenade.png').convert_alpha()
+        self.player = self.escenario.player        
+
         #pick up boxes
         health_box_img = pygame.image.load('img/icons/health_box.png').convert_alpha()
         ammo_box_img = pygame.image.load('img/icons/ammo_box.png').convert_alpha()
@@ -29,7 +26,6 @@ class ItemBox(pygame.sprite.Sprite):
         self.image = item_boxes[item_type]
         self.rect = self.image.get_rect()
         self.rect.midtop = (x + TILE_SIZE //2, y + (TILE_SIZE-self.image.get_height()))
-
 
 
     def update(self):
@@ -49,5 +45,7 @@ class ItemBox(pygame.sprite.Sprite):
                 print("Recolecto +3 "+self.item_type)
             #delete the item box
             self.kill()
+
+        self.rect.x += self.escenario.screen_scroll
             
 
