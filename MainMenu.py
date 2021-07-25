@@ -27,7 +27,9 @@ class MainMenu(pygame.sprite.Sprite):
 		self.height_button = 80
 	
 	def update(self):
-		self.escenario.screen.blit(self.bg, (0, 0))
+		#self.escenario.screen.blit(self.bg, (0, 0))
+		self.escenario.start_game = False
+		self.escenario.player.demo = True
 
 		posX1 = SCREEN_WIDTH//2 - self.width_button//2
 		posY1 = SCREEN_HEIGHT//2 - 200	

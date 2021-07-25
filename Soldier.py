@@ -10,7 +10,7 @@ class Soldier(pygame.sprite.Sprite):
     def __init__(self, escenario, char_type, x, y, scale, speed, ammo, ammo_grenade):
         pygame.sprite.Sprite.__init__(self)
 
-        
+        self.demo = False
 
         self.escenario = escenario
         self.alive = True #esta vivo
@@ -184,31 +184,32 @@ class Soldier(pygame.sprite.Sprite):
 
     def detection_keyboard(self, event):
        
-        #presionando teclado
-        if event.type==pygame.KEYDOWN:
-            if event.key==pygame.K_a:
-                self.moving_left = True
-            if event.key==pygame.K_d:
-                self.moving_right = True
-            if event.key==pygame.K_w:
-                self.jump = True  
-            if event.key==pygame.K_SPACE:
-                self.shoot = True   
-            if event.key==pygame.K_q:
-                self.grenade = True            
+        if self.demo==False:
+            #presionando teclado
+            if event.type==pygame.KEYDOWN:
+                if event.key==pygame.K_a:
+                    self.moving_left = True
+                if event.key==pygame.K_d:
+                    self.moving_right = True
+                if event.key==pygame.K_w:
+                    self.jump = True  
+                if event.key==pygame.K_SPACE:
+                    self.shoot = True   
+                if event.key==pygame.K_q:
+                    self.grenade = True            
 
-        #liberando teclado
-        if event.type==pygame.KEYUP:
-            if event.key==pygame.K_a:
-                self.moving_left = False
-            if event.key==pygame.K_d:
-                self.moving_right = False
-            if event.key==pygame.K_w:
-                self.jump = False
-            if event.key==pygame.K_SPACE:
-                self.shoot = False 
-            if event.key==pygame.K_q:
-                self.grenade = False 
+            #liberando teclado
+            if event.type==pygame.KEYUP:
+                if event.key==pygame.K_a:
+                    self.moving_left = False
+                if event.key==pygame.K_d:
+                    self.moving_right = False
+                if event.key==pygame.K_w:
+                    self.jump = False
+                if event.key==pygame.K_SPACE:
+                    self.shoot = False 
+                if event.key==pygame.K_q:
+                    self.grenade = False 
 
     #acccion disparar
     def update_shoot(self):    
@@ -263,13 +264,15 @@ class Soldier(pygame.sprite.Sprite):
 
         if self.TIME_DEATH_COOLDOWN>0: 
             self.update_animation() #actualizamos la animacion del monito
+
             self.check_alive() #verificamos si estamos vivos
             self.update_shoot() #verificamos los disparos
             self.update_grenade() #verificamos las granadas
             
             self.move() #movemos a las nuevas coordenadas
         else:
-            self.escenario.mainMenu.updateRestart()
-            self.kill()
+            if self.demo==False:
+                self.escenario.mainMenu.updateRestart()
+                self.kill()
         
         self.escenario.screen.blit(pygame.transform.flip(self.image, self.flip, False), self.rect) #pinta al monito en la pantalla

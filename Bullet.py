@@ -22,7 +22,7 @@ class Bullet(pygame.sprite.Sprite):
         self.height = self.image.get_height()
 
 
-    def update(self):        
+    def update(self):
 
         # validacion de colision bala y jugador
         player = self.escenario.player

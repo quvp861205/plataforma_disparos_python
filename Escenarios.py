@@ -37,6 +37,7 @@ class Escenarios():
         self.bg_scroll = 0
 
         self.mainMenu = MainMenu(self)
+        self.inicializar(1)
         
         
     def inicializar(self, level):
@@ -160,9 +161,34 @@ class Escenarios():
     
     def draw(self):
 
-        if self.start_game==False:
+        # mostramos el menu
+        if self.start_game==False:           
+
             # pintamos el menu
-            self.screen.fill(BG)
+            self.screen.fill(BG)            
+
+            self.draw_background()            
+            
+            for tile in self.obstacle_list:
+                tile[1].x += self.screen_scroll
+                self.screen.blit(tile[0], tile[1])
+
+            self.enemy_group.update()           
+
+            self.decoration_group.update()
+            self.decoration_group.draw(self.screen)
+
+            self.water_group.update()
+            self.water_group.draw(self.screen)
+
+            self.exit_group.update()
+            self.exit_group.draw(self.screen)     
+
+            self.item_box_group.update()
+            self.item_box_group.draw(self.screen)   
+            
+            self.health_bar.draw()
+
             self.mainMenu.update()
 
         else:
