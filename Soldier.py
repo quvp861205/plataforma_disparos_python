@@ -157,6 +157,14 @@ class Soldier(pygame.sprite.Sprite):
                     self.in_air = False
                     dy = tile[1].top - self.rect.bottom
 
+        # colisiones con agua
+        if pygame.sprite.spritecollide(self, self.escenario.water_group, False):
+            self.health = 0
+            dy = 1
+
+        # colisiones al vacio
+        if self.rect.bottom>SCREEN_HEIGHT:
+            self.health = 0
 
         # para que no se salga de los limites de la pantalla
         if self.rect.left + dx < 0 or self.rect.right + dx > SCREEN_WIDTH:
@@ -212,7 +220,7 @@ class Soldier(pygame.sprite.Sprite):
         #si temporizador paso 20 ciclos y hay balas,entonces agregamos una nueva bala
         if self.shoot and self.shoot_cooldown==0 and self.ammo>0: 
             self.shoot_cooldown = 20            
-            bullet = Bullet(self.escenario, self.rect.centerx + (0.13*self.rect.x*self.direction), self.rect.centery, self.direction, self)
+            bullet = Bullet(self.escenario, self.rect.centerx + (0.6*self.rect.size[0]*self.direction), self.rect.centery, self.direction, self)
             self.bullet_group.add(bullet)
             self.ammo -= 1
 
@@ -260,5 +268,8 @@ class Soldier(pygame.sprite.Sprite):
             self.update_grenade() #verificamos las granadas
             
             self.move() #movemos a las nuevas coordenadas
+        else:
+            self.escenario.mainMenu.updateRestart()
+            self.kill()
         
         self.escenario.screen.blit(pygame.transform.flip(self.image, self.flip, False), self.rect) #pinta al monito en la pantalla

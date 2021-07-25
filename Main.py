@@ -13,7 +13,6 @@ clock = pygame.time.Clock()
 FPS = 60
 
 escena = Escenarios(screen)
-escena.process_data()
 
 
 #Ciclo del juego y validacion de todos los eventos

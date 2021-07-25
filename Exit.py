@@ -10,3 +10,8 @@ class Exit(pygame.sprite.Sprite):
 	
 	def update(self):
 		self.rect.x += self.escenario.screen_scroll
+
+		if pygame.sprite.collide_rect(self.escenario.player, self):
+			level = self.escenario.level+1
+			self.escenario.inicializar(level)
+			self.escenario.start_game = True

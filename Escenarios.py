@@ -6,21 +6,50 @@ from HealthBar import *
 from Decoration import *
 from Water import *
 from Exit import *
+from MainMenu import *
 
 class Escenarios():
     def __init__(self, screen):
-        
+
+        self.screen = screen  
         self.obstacle_list = []
         self.world_data = []
         self.level_length = 0
         self.level = 1
-        self.screen = screen
+        self.start_game = False
+        self.list_background = []
+        self.img_list = []
+
+        #grupos de sprites
+        self.player = {}
+        self.health_bar = {}
+        self.enemy_group = pygame.sprite.Group()
+        self.bullet_group = pygame.sprite.Group()
+        self.grenade_group = pygame.sprite.Group()
+        self.explosion_group = pygame.sprite.Group()
+        self.item_box_group = pygame.sprite.Group()
+        self.decoration_group = pygame.sprite.Group()
+        self.water_group = pygame.sprite.Group()
+        self.exit_group = pygame.sprite.Group()  
+
+        self.scroll_thresh = 200
+        self.screen_scroll = 0
+        self.bg_scroll = 0
+
+        self.mainMenu = MainMenu(self)
+        
+        
+    def inicializar(self, level):
+        self.obstacle_list = []
+        self.world_data = []
+        self.level_length = 0
+        self.level = level
+        self.start_game = False        
 
         self.list_background = []
         for bg in os.listdir(f"img/background"):
             image = pygame.image.load(f"img/background/{bg}").convert_alpha() # carga imagen de fondo            
             self.list_background.append(image) 
-
 
         #grupos de sprites
         self.player = {}
@@ -58,7 +87,10 @@ class Escenarios():
         self.scroll_thresh = 200
         self.screen_scroll = 0
         self.bg_scroll = 0
-        
+
+        self.mainMenu = MainMenu(self)
+
+        self.process_data()
     
 
     def draw_background(self):
@@ -127,29 +159,36 @@ class Escenarios():
                         self.exit_group.add(exit)
     
     def draw(self):
-        self.draw_background()       
 
-        self.player.update()
-        
-        for tile in self.obstacle_list:
-            tile[1].x += self.screen_scroll
-            self.screen.blit(tile[0], tile[1])
+        if self.start_game==False:
+            # pintamos el menu
+            self.screen.fill(BG)
+            self.mainMenu.update()
 
-        self.enemy_group.update()
+        else:
+            self.draw_background()       
 
-        self.item_box_group.update()
-        self.item_box_group.draw(self.screen)
+            self.player.update()
+            
+            for tile in self.obstacle_list:
+                tile[1].x += self.screen_scroll
+                self.screen.blit(tile[0], tile[1])
 
-        self.decoration_group.update()
-        self.decoration_group.draw(self.screen)
+            self.enemy_group.update()           
 
-        self.water_group.update()
-        self.water_group.draw(self.screen)
+            self.decoration_group.update()
+            self.decoration_group.draw(self.screen)
 
-        self.exit_group.update()
-        self.exit_group.draw(self.screen)        
-        
-        self.health_bar.draw()
+            self.water_group.update()
+            self.water_group.draw(self.screen)
+
+            self.exit_group.update()
+            self.exit_group.draw(self.screen)     
+
+            self.item_box_group.update()
+            self.item_box_group.draw(self.screen)   
+            
+            self.health_bar.draw()
 
         
 

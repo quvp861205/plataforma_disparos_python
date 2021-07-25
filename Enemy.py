@@ -162,6 +162,15 @@ class Enemy(pygame.sprite.Sprite):
                         self.in_air = False
                         dy = tile[1].top - self.rect.bottom
 
+             # colisiones con agua
+            if pygame.sprite.spritecollide(self, self.escenario.water_group, False):
+                self.health = 0
+
+            # colisiones al vacio
+            if self.rect.bottom>SCREEN_HEIGHT:
+                self.health = 0
+
+
             self.rect.x += dx
             self.rect.y += dy 
     
