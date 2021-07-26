@@ -1,3 +1,4 @@
+from Transitions import Transitions
 from Library import *
 from Soldier import *
 from Enemy import *
@@ -7,6 +8,7 @@ from Decoration import *
 from Water import *
 from Exit import *
 from MainMenu import *
+from Music import *
 
 class Escenarios():
     def __init__(self, screen):
@@ -19,6 +21,7 @@ class Escenarios():
         self.start_game = False
         self.list_background = []
         self.img_list = []
+        self.start_intro = False
 
         #grupos de sprites
         self.player = {}
@@ -36,7 +39,12 @@ class Escenarios():
         self.screen_scroll = 0
         self.bg_scroll = 0
 
+        self.death_fade = Transitions(self,2,BLACK,4)
+
+        self.init_fade = Transitions(self,1,BLACK,4)
+
         self.mainMenu = MainMenu(self)
+
         self.inicializar(1)
         
         
@@ -92,6 +100,9 @@ class Escenarios():
         self.mainMenu = MainMenu(self)
 
         self.process_data()
+
+        self.music = Music()
+        self.music.playBackground()
     
 
     def draw_background(self):
@@ -162,7 +173,7 @@ class Escenarios():
     def draw(self):
 
         # mostramos el menu
-        if self.start_game==False:           
+        if self.start_game==False:                       
 
             # pintamos el menu
             self.screen.fill(BG)            
@@ -187,26 +198,17 @@ class Escenarios():
             self.item_box_group.update()
             self.item_box_group.draw(self.screen)   
             
-            self.health_bar.draw()
-
-            self.mainMenu.update()
+            self.health_bar.draw()            
 
         else:
-            self.draw_background()       
-
-            self.player.update()
+            
+            self.draw_background()            
             
             for tile in self.obstacle_list:
                 tile[1].x += self.screen_scroll
                 self.screen.blit(tile[0], tile[1])
 
-            self.enemy_group.update()           
-
-            self.decoration_group.update()
-            self.decoration_group.draw(self.screen)
-
-            self.water_group.update()
-            self.water_group.draw(self.screen)
+            self.enemy_group.update()                  
 
             self.exit_group.update()
             self.exit_group.draw(self.screen)     
@@ -215,9 +217,16 @@ class Escenarios():
             self.item_box_group.draw(self.screen)   
             
             self.health_bar.draw()
+            
+            self.player.update()
 
+            self.water_group.update()
+            self.water_group.draw(self.screen)
+
+            self.decoration_group.update()
+            self.decoration_group.draw(self.screen)      
         
-
+        self.mainMenu.update()
        
         
 

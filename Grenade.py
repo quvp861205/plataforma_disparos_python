@@ -65,7 +65,7 @@ class Grenade(pygame.sprite.Sprite):
 
             # y creamos el sprite de explosion
             explosion = Explosion(self.escenario, self.rect.x, self.rect.y, 0.5)
-            explosion.update()            
+            explosion.update()
             
             if self.yaExploto==False:
                 if self.escenario.enemy_group!=None:

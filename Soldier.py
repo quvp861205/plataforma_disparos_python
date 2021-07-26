@@ -193,8 +193,9 @@ class Soldier(pygame.sprite.Sprite):
                     self.moving_right = True
                 if event.key==pygame.K_w:
                     self.jump = True  
+                    self.escenario.music.jump_fx.play()
                 if event.key==pygame.K_SPACE:
-                    self.shoot = True   
+                    self.shoot = True                    
                 if event.key==pygame.K_q:
                     self.grenade = True            
 
@@ -224,6 +225,7 @@ class Soldier(pygame.sprite.Sprite):
             bullet = Bullet(self.escenario, self.rect.centerx + (0.6*self.rect.size[0]*self.direction), self.rect.centery, self.direction, self)
             self.bullet_group.add(bullet)
             self.ammo -= 1
+            self.escenario.music.shoot_fx.play()
 
         #actualizamos cada bala
         self.bullet_group.update()
@@ -242,6 +244,7 @@ class Soldier(pygame.sprite.Sprite):
             grenade = Grenade(self.escenario, self.rect.centerx + (0.5*self.rect.size[0]*self.direction), self.rect.top, self.direction)
             self.grenade_group.add(grenade)
             self.ammo_grenade -= 1
+            
 
         #actualizamos cada granada
         self.grenade_group.update()

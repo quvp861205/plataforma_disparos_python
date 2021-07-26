@@ -2,6 +2,7 @@ from pygame.locals import *
 from pygame.rect import *
 from pygame.sprite import *
 from pygame.font import *
+from pygame.mixer import *
 import random as rand 
 import csv
 import os
@@ -18,6 +19,7 @@ WHITE = (255, 255, 255)
 GREEN = (0, 255, 0)
 BLACK = (0, 0, 0)
 RED = (255,0,0)
+PINK = (235, 65, 54)
 
 COLS = 150 # numero de columnas que divide la pantalla
 ROWS = 16 # numero de registros que divide la pantalla

@@ -1,6 +1,7 @@
 from Library import *
 from Escenarios import *
 
+#mixer.init()
 pygame.init()
 
 

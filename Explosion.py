@@ -22,6 +22,8 @@ class Explosion(pygame.sprite.Sprite):
         self.counter = 0
         self.screen = self.escenario.screen
 
+        self.escenario.music.grenade_fx.play()
+
 
     def update(self):
         EXPLOSION_SPEED = 1000000

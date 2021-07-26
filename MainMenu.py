@@ -1,6 +1,5 @@
 from Library import *
 
-
 class MainMenu(pygame.sprite.Sprite):
 	def __init__(self, escenario):
 		pygame.sprite.Sprite.__init__(self)
@@ -25,8 +24,20 @@ class MainMenu(pygame.sprite.Sprite):
 
 		self.width_button = 400
 		self.height_button = 80
-	
+
 	def update(self):
+		if self.escenario.start_game==True and self.escenario.player.health<=0:
+			if self.escenario.death_fade.fade()==True:
+				self.updateRestart()
+		elif self.escenario.start_game==True and self.escenario.player.health>0:
+			if self.escenario.start_intro==True:
+				if self.escenario.init_fade.fade()==True:
+					self.escenario.start_intro=False
+					self.escenario.init_fade.fade_counter = 0
+		elif self.escenario.start_game==False:
+			self.updateInit()
+	
+	def updateInit(self):
 		#self.escenario.screen.blit(self.bg, (0, 0))
 		self.escenario.start_game = False
 		self.escenario.player.demo = True
@@ -67,6 +78,7 @@ class MainMenu(pygame.sprite.Sprite):
 					self.escenario.level = 1					
 					self.escenario.inicializar(1)
 					self.escenario.start_game = True
+					self.escenario.start_intro = True
 				
 				# finalizamos el juego
 				if posX2 <= mouse[0] <= posX2+self.width_button and posY2 <= mouse[1] <= posY2+self.height_button:
@@ -97,3 +109,5 @@ class MainMenu(pygame.sprite.Sprite):
 				if posX1 <= mouse[0] <= posX1+self.width_button and posY1 <= mouse[1] <= posY1+self.height_button:
 					self.escenario.inicializar(self.escenario.level)				
 					self.escenario.start_game = True
+					self.escenario.start_intro = True
+					self.escenario.death_fade.fade_counter = 0

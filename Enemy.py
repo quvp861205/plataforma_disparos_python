@@ -188,6 +188,8 @@ class Enemy(pygame.sprite.Sprite):
             bullet = Bullet(self.escenario, self.rect.centerx + (0.6*self.rect.size[0]*self.direction), self.rect.centery, self.direction, self)
             self.bullet_group.add(bullet)
             self.ammo -= 1
+            self.escenario.music.shoot_fx.play()
+
 
         #actualizamos cada bala
         self.bullet_group.update()
@@ -207,6 +209,7 @@ class Enemy(pygame.sprite.Sprite):
             grenade = Grenade(self.escenario, self.rect.centerx + (0.5*self.rect.size[0]*self.direction), self.rect.top, self.direction)
             self.grenade_group.add(grenade)
             self.ammo_grenade -= 1
+            
 
         #actualizamos cada granada
         self.grenade_group.update()
