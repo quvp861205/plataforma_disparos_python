@@ -18,6 +18,7 @@ class Escenarios():
         self.world_data = []
         self.level_length = 0
         self.level = 1
+        self.max_level = len(os.listdir(f"levels"))
         self.start_game = False
         self.list_background = []
         self.img_list = []
@@ -49,60 +50,67 @@ class Escenarios():
         
         
     def inicializar(self, level):
-        self.obstacle_list = []
-        self.world_data = []
-        self.level_length = 0
-        self.level = level
-        self.start_game = False        
 
-        self.list_background = []
-        for bg in os.listdir(f"img/background"):
-            image = pygame.image.load(f"img/background/{bg}").convert_alpha() # carga imagen de fondo            
-            self.list_background.append(image) 
+        if level<=self.max_level:
+            self.obstacle_list = []
+            self.world_data = []
+            self.level_length = 0
+            self.level = level
+            self.start_game = False        
 
-        #grupos de sprites
-        self.player = {}
-        self.health_bar = {}
-        self.enemy_group = pygame.sprite.Group()
-        self.bullet_group = pygame.sprite.Group()
-        self.grenade_group = pygame.sprite.Group()
-        self.explosion_group = pygame.sprite.Group()
-        self.item_box_group = pygame.sprite.Group()
-        self.decoration_group = pygame.sprite.Group()
-        self.water_group = pygame.sprite.Group()
-        self.exit_group = pygame.sprite.Group()
+            self.list_background = []
+            for bg in os.listdir(f"img/background"):
+                image = pygame.image.load(f"img/background/{bg}").convert_alpha() # carga imagen de fondo            
+                self.list_background.append(image) 
 
-        # creamos un mapa con -1
-        for row in range(ROWS):
-            r = [-1] * COLS
-            self.world_data.append(r)
-        
-        # cargamos un nivel
-        with open(f'levels/level{self.level}_data.csv', newline='') as csvfile:
-            reader = csv.reader(csvfile, delimiter=',')
+            #grupos de sprites
+            self.player = {}
+            self.health_bar = {}
+            self.enemy_group = pygame.sprite.Group()
+            self.bullet_group = pygame.sprite.Group()
+            self.grenade_group = pygame.sprite.Group()
+            self.explosion_group = pygame.sprite.Group()
+            self.item_box_group = pygame.sprite.Group()
+            self.decoration_group = pygame.sprite.Group()
+            self.water_group = pygame.sprite.Group()
+            self.exit_group = pygame.sprite.Group()
 
-            for x, row in enumerate(reader):
-                for y, tile in enumerate(row):
-                    self.world_data[x][y] = int(tile)
-        
-        
-        # cargamos las imagenes
-        self.img_list = []
-        for x in range(TILE_TYPES):
-            img = pygame.image.load(f'img/Tile/{x}.png')
-            img = pygame.transform.scale(img, (TILE_SIZE, TILE_SIZE))
-            self.img_list.append(img)
-        
-        self.scroll_thresh = 200
-        self.screen_scroll = 0
-        self.bg_scroll = 0
+            # creamos un mapa con -1
+            for row in range(ROWS):
+                r = [-1] * COLS
+                self.world_data.append(r)
+            
+            # cargamos un nivel
+            with open(f'levels/level{self.level}_data.csv', newline='') as csvfile:
+                reader = csv.reader(csvfile, delimiter=',')
 
-        self.mainMenu = MainMenu(self)
+                for x, row in enumerate(reader):
+                    for y, tile in enumerate(row):
+                        self.world_data[x][y] = int(tile)
+            
+            
+            # cargamos las imagenes
+            self.img_list = []
+            for x in range(TILE_TYPES):
+                img = pygame.image.load(f'img/Tile/{x}.png')
+                img = pygame.transform.scale(img, (TILE_SIZE, TILE_SIZE))
+                self.img_list.append(img)
+            
+            self.scroll_thresh = 200
+            self.screen_scroll = 0
+            self.bg_scroll = 0
 
-        self.process_data()
+            self.mainMenu = MainMenu(self)
 
-        self.music = Music()
-        self.music.playBackground()
+            self.process_data()
+
+            self.music = Music()
+            self.music.playBackground()
+        else:
+            smallfont = pygame.font.SysFont('consolas',35)
+            fin_juego = smallfont.render('Ya no hay mas niveles!!' , True , WHITE)
+            self.screen.blit(fin_juego , (SCREEN_WIDTH//2 - 180, SCREEN_HEIGHT//2 + 10))      
+
     
 
     def draw_background(self):
@@ -123,7 +131,9 @@ class Escenarios():
             self.screen.blit(sky, ((x*width) - self.bg_scroll*0.3,0))
             self.screen.blit(mountain, ((x*width) - self.bg_scroll*0.5, SCREEN_HEIGHT - mountain.get_height() - 300))
             self.screen.blit(pine1, ((x*width) - self.bg_scroll*0.6, SCREEN_HEIGHT - pine1.get_height() - 150))      
-            self.screen.blit(pine2, ((x*width) - self.bg_scroll*0.7, SCREEN_HEIGHT - pine2.get_height() ))            
+            self.screen.blit(pine2, ((x*width) - self.bg_scroll*0.7, SCREEN_HEIGHT - pine2.get_height() ))    
+
+          
 
 
     # cargamos los sprites en base al mapa y las imagenes
@@ -227,6 +237,8 @@ class Escenarios():
             self.decoration_group.draw(self.screen)      
         
         self.mainMenu.update()
+
+       
        
         
 
