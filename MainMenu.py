@@ -1,3 +1,4 @@
+import pygame
 from Library import *
 
 class MainMenu(pygame.sprite.Sprite):
@@ -26,10 +27,12 @@ class MainMenu(pygame.sprite.Sprite):
 		self.height_button = 80
 
 	def update(self):
-		if self.escenario.start_game==True and self.escenario.player.health<=0:
+		player = self.escenario.player
+		has_health = hasattr(player, 'health')
+		if self.escenario.start_game==True and has_health and player.health<=0:
 			if self.escenario.death_fade.fade()==True:
 				self.updateRestart()
-		elif self.escenario.start_game==True and self.escenario.player.health>0:
+		elif self.escenario.start_game==True and has_health and player.health>0:
 			if self.escenario.start_intro==True:
 				if self.escenario.init_fade.fade()==True:
 					self.escenario.start_intro=False
@@ -75,7 +78,7 @@ class MainMenu(pygame.sprite.Sprite):
 
 				# iniciamos el juego
 				if posX1 <= mouse[0] <= posX1+self.width_button and posY1 <= mouse[1] <= posY1+self.height_button:
-					self.escenario.level = 1					
+					self.escenario.level = 1
 					self.escenario.inicializar(1)
 					self.escenario.start_game = True
 					self.escenario.start_intro = True

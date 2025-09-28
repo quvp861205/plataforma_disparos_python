@@ -14,8 +14,8 @@ FPS = 60
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 640
 LOWER_MARGIN = 100
-SIDE_MARGIN = 300
 
+SIDE_MARGIN = 300
 
 # CONFIGURAMOS LA PANTALLA
 screen = pygame.display.set_mode((SCREEN_WIDTH + SIDE_MARGIN, SCREEN_HEIGHT + LOWER_MARGIN))
@@ -25,7 +25,7 @@ pygame.display.set_caption('Level Editor')
 ROWS = 16 # REGISTROS CUADRICULA
 MAX_COLS = 150 # MAXIMO DE COLUMNAS
 TILE_SIZE = SCREEN_HEIGHT // ROWS # TAMAÑO DE CADA CUADRITO
-TILE_TYPES = 21 # NUMERO DE SPRITES
+TILE_TYPES = 22 # NUMERO DE SPRITES (ahora incluye el item de fuego)
 level = 1 # LEVEL ACTUAL
 current_tile = 0 # UBICACION ACTUAL EN EL MAPA
 scroll_left = False # SCROLL IZQUIERDA
@@ -43,9 +43,12 @@ sky_img = pygame.image.load('img/Background/sky_cloud.png').convert_alpha()
 # CARGAMOS LOS PRITES PARA el MAPA
 img_list = []
 for x in range(TILE_TYPES):
-	img = pygame.image.load(f'img/tile/{x}.png').convert_alpha()
-	img = pygame.transform.scale(img, (TILE_SIZE, TILE_SIZE))
-	img_list.append(img)
+    if x == 21:
+        img = pygame.image.load('img/tile/21.png').convert_alpha()
+    else:
+        img = pygame.image.load(f'img/tile/{x}.png').convert_alpha()
+    img = pygame.transform.scale(img, (TILE_SIZE, TILE_SIZE))
+    img_list.append(img)
 
 
 

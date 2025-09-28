@@ -2,11 +2,20 @@
 Clase para representar al jugador
 """
 
+import pygame
 from Library import *
 from Bullet import *
 from Grenade import *
 
 class Enemy(pygame.sprite.Sprite):
+    # Efecto de muerte por fuego se inicializa en __init__
+    def burn_by_fire(self, duration=60):
+        self.burning = True
+        self.burn_time = duration
+        self.health = 1  # Deja 1 de vida para muerte lenta
+        self.speed = 0
+        self.alive = False
+        self.update_action(3)
     def __init__(self, escenario, char_type, x, y, scale, speed, ammo):
         pygame.sprite.Sprite.__init__(self)
 
@@ -70,6 +79,11 @@ class Enemy(pygame.sprite.Sprite):
         self.moving_right = False #moviendose a la derecha
         self.speed = speed #velocidad del movimiento
 
+        # Efecto de muerte por fuego
+        self.burning = False
+        self.burn_particles = pygame.sprite.Group()
+        self.burn_time = 0
+
         #variables para la inteligencia artificial
         self.move_counter = 0
         self.vision = pygame.Rect(0, 0, 150, 20)
@@ -96,6 +110,9 @@ class Enemy(pygame.sprite.Sprite):
         if self.frame_index>=len(self.animation_list[self.action]): #validar que no se salga de los limites
             if self.alive==False: #si ya no esta vivo, solo se ejecuta 1 vez la animacion
                 self.frame_index -= 1
+                # Apagar sonido de lanzallamas si está sonando
+                if hasattr(self.escenario, 'music') and hasattr(self.escenario.music, 'fuego_fx'):
+                    self.escenario.music.fuego_fx.stop()
                 self.kill()
             else:
                 self.frame_index = 0 # vuelve hacer loop la animacion
@@ -217,12 +234,52 @@ class Enemy(pygame.sprite.Sprite):
         self.grenade_group.draw(self.escenario.screen)
     
     def check_alive(self):
+        if self.burning:
+            if self.burn_time > 0:
+                self.burn_time -= 1
+                # Generar muchas partículas pequeñas de fuego y humo
+                import random
+                from Particle import Particle
+                for _ in range(10):  # Menos cantidad, pero más variación
+                    base = random.random()
+                    if base < 0.3:
+                        color = (255, random.randint(120,180), 0, random.randint(180, 230))
+                        size = random.randint(2, 4)
+                    elif base < 0.7:
+                        color = (255, random.randint(80,120), 0, random.randint(100, 160))
+                        size = random.randint(4, 7)
+                    else:
+                        color = (255, random.randint(180,220), random.randint(60,100), random.randint(120, 200))
+                        size = random.randint(3, 6)
+                    dx = random.uniform(-0.7, 0.7)
+                    dy = random.uniform(-0.18, -0.65)
+                    lifetime = random.randint(22, 38)
+                    # Bajar la posición de las partículas (más cerca de la base del enemigo)
+                    self.burn_particles.add(Particle(self.rect.centerx + random.randint(-14,14), self.rect.bottom - random.randint(8, 24), color, size, dx, dy, lifetime))
+                # Partículas de humo grises que suben lentamente y desaparecen
+                for _ in range(7):
+                    color = (random.randint(120,180), random.randint(120,180), random.randint(120,180), random.randint(60,120))
+                    size = random.randint(6, 14)
+                    dx = random.uniform(-1.2, 1.2)
+                    dy = random.uniform(-0.4, -1.0)
+                    lifetime = random.randint(32, 54)
+                    self.burn_particles.add(Particle(self.rect.centerx + random.randint(-18,18), self.rect.centery - random.randint(0, 18), color, size, dx, dy, lifetime))
+                for _ in range(5):
+                    color = (80, 80, 80, 90)
+                    size = random.randint(2, 7)
+                    dx = random.uniform(-0.7, 0.7)
+                    dy = random.uniform(-0.2, -0.7)
+                    lifetime = random.randint(22, 38)
+                    self.burn_particles.add(Particle(self.rect.centerx + random.randint(-12,12), self.rect.centery + random.randint(-8,8), color, size, dx, dy, lifetime))
+                self.burn_particles.update()
+            else:
+                self.health = 0
+                self.burning = False
         if self.health <= 0 and self.alive==True:
             self.health = 0
             self.speed = 0
             self.alive = False
-            self.update_action(3)            
-        
+            self.update_action(3)
         if self.TIME_DEATH_COOLDOWN>0 and self.health <= 0:
             self.TIME_DEATH_COOLDOWN-=1
 
@@ -308,13 +365,17 @@ class Enemy(pygame.sprite.Sprite):
         
         # aplicamos el scroll al enemigo
         self.rect.x += self.escenario.screen_scroll
+        # Las partículas de quemadura mantienen su posición original para un efecto de fuego más realista
 
 
     def update(self):
-        if self.TIME_DEATH_COOLDOWN>0: 
-            self.update_animation() #actualizamos la animacion del monito
-            self.check_alive() #verificamos si estamos vivos   
-            self.ai()           
-        
-            self.escenario.screen.blit(pygame.transform.flip(self.image, self.flip, False), self.rect) #pinta al monito en la pantalla
+        if self.TIME_DEATH_COOLDOWN>0:
+            self.update_animation()
+            self.check_alive()
+            self.ai()
+            self.escenario.screen.blit(pygame.transform.flip(self.image, self.flip, False), self.rect)
+            # Dibujar partículas de quemadura
+            if self.burning:
+                for particle in self.burn_particles:
+                    self.escenario.screen.blit(particle.image, particle.rect)
             

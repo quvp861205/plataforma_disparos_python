@@ -63,15 +63,18 @@ class Grenade(pygame.sprite.Sprite):
             # eliminamos el sprite de granada
             self.kill()
 
-            # y creamos el sprite de explosion
+            # y creamos el sprite de explosion y la agregamos al grupo para que se dibuje
             explosion = Explosion(self.escenario, self.rect.x, self.rect.y, 0.5)
-            explosion.update()
-            
+            self.escenario.explosion_group.add(explosion)
+            # Activar screen shake
+            if hasattr(self.escenario, 'trigger_screen_shake'):
+                self.escenario.trigger_screen_shake(duration=18, magnitude=12)
+
             if self.yaExploto==False:
                 if self.escenario.enemy_group!=None:
                     for enemy in self.escenario.enemy_group:
-                        if abs(self.rect.centerx - enemy.rect.centerx) < TILE_SIZE * 2 and \
-                            abs(self.rect.centery - enemy.rect.centery) < TILE_SIZE * 2:
+                        if abs(self.rect.centerx - enemy.rect.centerx) < TILE_SIZE * 4 and \
+                            abs(self.rect.centery - enemy.rect.centery) < TILE_SIZE * 4:
                             health = enemy.health
                             enemy.health -= self.damage
                             if self.damage>health:
@@ -82,8 +85,8 @@ class Grenade(pygame.sprite.Sprite):
                             print('enemigo herido con granada, health['+str(health)+' -> '+str(enemy.health)+']')
 
                 
-                if abs(self.rect.centerx - self.escenario.player.rect.centerx) < TILE_SIZE * 2 and \
-                    abs(self.rect.centery - self.escenario.player.rect.centery) < TILE_SIZE * 2:
+                if abs(self.rect.centerx - self.escenario.player.rect.centerx) < TILE_SIZE * 4 and \
+                    abs(self.rect.centery - self.escenario.player.rect.centery) < TILE_SIZE * 4:
                     health = self.escenario.player.health
                     self.escenario.player.health -= self.damage
                     if self.damage>health:

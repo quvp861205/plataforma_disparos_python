@@ -15,7 +15,12 @@ class Bullet(pygame.sprite.Sprite):
         self.image = self.grenade_img
         self.rect = self.image.get_rect()
         self.rect.center = (x,y)
-        self.direction = direction
+        # direction puede ser int (antiguo) o tupla (nuevo)
+        if isinstance(direction, tuple):
+            self.dir_x, self.dir_y = direction
+        else:
+            self.dir_x = direction
+            self.dir_y = 0
         self.explosion = False
         self.group_enemy = self.escenario.enemy_group
         self.width = self.image.get_width()
@@ -75,9 +80,18 @@ class Bullet(pygame.sprite.Sprite):
                                             
 
         if self.explosion==False:
-            self.rect.x += (self.direction * self.speed) + self.escenario.screen_scroll
+            # Normalizar diagonal para que la velocidad sea constante
+            import math
+            dx = self.dir_x
+            dy = self.dir_y
+            if dx != 0 or dy != 0:
+                length = math.hypot(dx, dy)
+                dx = dx / length
+                dy = dy / length
+            self.rect.x += int(dx * self.speed) + self.escenario.screen_scroll
+            self.rect.y += int(dy * self.speed)
 
-            if self.rect.right<0 or self.rect.left>SCREEN_WIDTH:
+            if self.rect.right<0 or self.rect.left>SCREEN_WIDTH or self.rect.bottom<0 or self.rect.top>SCREEN_HEIGHT:
                 self.kill()  
         else:
             self.kill()

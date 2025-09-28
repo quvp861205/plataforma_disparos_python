@@ -26,7 +26,7 @@ class Escenarios():
 
         #grupos de sprites
         self.player = {}
-        self.health_bar = {}
+        self.health_bar = None
         self.enemy_group = pygame.sprite.Group()
         self.bullet_group = pygame.sprite.Group()
         self.grenade_group = pygame.sprite.Group()
@@ -46,7 +46,7 @@ class Escenarios():
 
         self.mainMenu = MainMenu(self)
 
-        self.inicializar(1)
+        self.inicializar(3)
         
         
     def inicializar(self, level):
@@ -65,7 +65,7 @@ class Escenarios():
 
             #grupos de sprites
             self.player = {}
-            self.health_bar = {}
+            self.health_bar = None
             self.enemy_group = pygame.sprite.Group()
             self.bullet_group = pygame.sprite.Group()
             self.grenade_group = pygame.sprite.Group()
@@ -176,9 +176,12 @@ class Escenarios():
                     elif tile == 19:#create health box
                         item_box = ItemBox(self, 'Health', x * TILE_SIZE, y * TILE_SIZE)
                         self.item_box_group.add(item_box)
-                    elif tile == 20:#create exit
+                    elif tile == 20: # create exit
                         exit = Exit(self, img, x * TILE_SIZE, y * TILE_SIZE)
                         self.exit_group.add(exit)
+                    elif tile == 21: # create fire item box
+                        item_box = ItemBox(self, 'Fire', x * TILE_SIZE, y * TILE_SIZE)
+                        self.item_box_group.add(item_box)
     
     def draw(self):
 
@@ -194,7 +197,16 @@ class Escenarios():
                 tile[1].x += self.screen_scroll
                 self.screen.blit(tile[0], tile[1])
 
-            self.enemy_group.update()           
+            self.enemy_group.update()
+            # Detectar colisión de FireBullet con enemigos
+            for enemy in self.enemy_group:
+                for bullet in self.player.bullet_group:
+                    # Solo aplicar si es FireBullet
+                    if bullet.__class__.__name__ == 'FireBullet' and enemy.rect.colliderect(bullet.rect):
+                        if not getattr(enemy, 'burning', False):
+                            enemy.burn_by_fire(duration=60)
+                        bullet.kill()
+                        # No agregar explosión tipo granada, solo partículas de quemadura
 
             self.decoration_group.update()
             self.decoration_group.draw(self.screen)
@@ -207,35 +219,47 @@ class Escenarios():
 
             self.item_box_group.update()
             self.item_box_group.draw(self.screen)   
-            
+
+            self.explosion_group.update()
+            self.explosion_group.draw(self.screen)
+
             self.health_bar.draw()            
 
         else:
-            
-            self.draw_background()            
-            
+            self.draw_background()
             for tile in self.obstacle_list:
                 tile[1].x += self.screen_scroll
                 self.screen.blit(tile[0], tile[1])
 
-            self.enemy_group.update()                  
+            self.enemy_group.update()
+            # Detectar colisión de FireBullet con enemigos (en juego)
+            for enemy in self.enemy_group:
+                for bullet in self.player.bullet_group:
+                    if bullet.__class__.__name__ == 'FireBullet' and enemy.rect.colliderect(bullet.rect):
+                        if not getattr(enemy, 'burning', False):
+                            enemy.burn_by_fire(duration=60)
+                        bullet.kill()
+                        # No agregar explosión tipo granada, solo partículas de quemadura
 
             self.exit_group.update()
-            self.exit_group.draw(self.screen)     
+            self.exit_group.draw(self.screen)
 
             self.item_box_group.update()
-            self.item_box_group.draw(self.screen)   
-            
-            self.health_bar.draw()
-            
+            self.item_box_group.draw(self.screen)
+
+            if self.health_bar is not None:
+                self.health_bar.draw()
+
             self.player.update()
 
             self.water_group.update()
             self.water_group.draw(self.screen)
 
             self.decoration_group.update()
-            self.decoration_group.draw(self.screen)      
-        
+            self.decoration_group.draw(self.screen)
+
+            self.explosion_group.update()
+            self.explosion_group.draw(self.screen)
         self.mainMenu.update()
 
        

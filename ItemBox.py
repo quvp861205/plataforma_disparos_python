@@ -1,3 +1,4 @@
+import pygame
 from Library import *
 
 class ItemBox(pygame.sprite.Sprite):
@@ -14,10 +15,12 @@ class ItemBox(pygame.sprite.Sprite):
         health_box_img = pygame.image.load('img/icons/health_box.png').convert_alpha()
         ammo_box_img = pygame.image.load('img/icons/ammo_box.png').convert_alpha()
         grenade_box_img = pygame.image.load('img/icons/grenade_box.png').convert_alpha()
+        fire_box_img = pygame.image.load('img/tile/21.png').convert_alpha()
         item_boxes = {
-            'Health'	: health_box_img,
-            'Ammo'		: ammo_box_img,
-            'Grenade'	: grenade_box_img
+            'Health'   : health_box_img,
+            'Ammo'     : ammo_box_img,
+            'Grenade'  : grenade_box_img,
+            'Fire'     : fire_box_img
         }
 
         self.item_type = item_type
@@ -32,16 +35,19 @@ class ItemBox(pygame.sprite.Sprite):
         if pygame.sprite.collide_rect(self.escenario.player, self):
             #check what kind of box it was
             if self.item_type == 'Health':
-                self.escenario.player.health += 25
+                self.escenario.player.health += 75
                 if self.escenario.player.health > self.escenario.player.max_health:
                     self.escenario.player.health = self.escenario.player.max_health
-                print("Recolecto +25 "+self.item_type)
+                print("Recolecto +75 "+self.item_type)
             elif self.item_type == 'Ammo':
                 self.escenario.player.ammo += 15
                 print("Recolecto +15 "+self.item_type)
             elif self.item_type == 'Grenade':
                 self.escenario.player.ammo_grenade += 3
                 print("Recolecto +3 "+self.item_type)
+            elif self.item_type == 'Fire':
+                self.escenario.player.ammo_fire += 5
+                print("Recolecto +5 Fuego")
             #delete the item box
             self.kill()
 

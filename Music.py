@@ -1,3 +1,5 @@
+
+import pygame
 from Library import *
 
 
@@ -14,7 +16,11 @@ class Music():
         self.shoot_fx.set_volume(0.2)
 
         self.grenade_fx = pygame.mixer.Sound("audio/grenade.wav")
-        self.grenade_fx.set_volume(0.2)        
+        self.grenade_fx.set_volume(0.2)
+
+        # Sonido de lanzallamas
+        self.fuego_fx = pygame.mixer.Sound("audio/fuego.mp3")
+        self.fuego_fx.set_volume(0.35)
 
     def playBackground(self):
         pygame.mixer.music.play(-1, 0.0, 5000)

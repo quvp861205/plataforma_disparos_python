@@ -25,7 +25,7 @@ COLS = 150 # numero de columnas que divide la pantalla
 ROWS = 16 # numero de registros que divide la pantalla
 TILE_SIZE = SCREEN_HEIGHT // ROWS # tamaño de cada regilla
 
-TILE_TYPES = 21
+TILE_TYPES = 22
 
 
 pygame.font.init()

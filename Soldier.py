@@ -2,19 +2,39 @@
 Clase para representar al jugador
 """
 
+import pygame
 from Library import *
 from Bullet import *
 from Grenade import *
 
 class Soldier(pygame.sprite.Sprite):
+    def update_animation(self):
+        #duracion entre cada fotograma
+        self.ANIMATION_COOLDOWN = 100
+
+        self.image = self.animation_list[self.action][self.frame_index]
+
+        if pygame.time.get_ticks() - self.update_time>self.ANIMATION_COOLDOWN:
+            self.update_time = pygame.time.get_ticks()
+            self.frame_index +=1
+
+        if self.frame_index>=len(self.animation_list[self.action]): #validar que no se salga de los limites
+            if self.alive==False: #si ya no esta vivo, solo se ejecuta 1 vez la animacion
+                self.frame_index -= 1
+                self.kill()
+            else:
+                self.frame_index = 0 # vuelve hacer loop la animacion
     def __init__(self, escenario, char_type, x, y, scale, speed, ammo, ammo_grenade):
         pygame.sprite.Sprite.__init__(self)
+        # Variables para disparo diagonal
+        self.shoot_dir_x = 0
+        self.shoot_dir_y = 0
 
         self.demo = False
 
         self.escenario = escenario
         self.alive = True #esta vivo
-        self.health = 100
+        self.health = 300
         self.max_health = self.health
         self.TIME_DEATH_COOLDOWN = 100 #duracion del jugador ya muerto antes que dezaparesca
 
@@ -25,6 +45,7 @@ class Soldier(pygame.sprite.Sprite):
         self.vel_y = 0 #velocidad de brinco
         self.gravity = 0.75
         self.in_air = True
+        self.double_jump_available = True  # Permite doble salto
 
         self.animation_list = [] #lista de imagenes del soldado
         self.frame_index = 0 #indicador de la animacion actual
@@ -37,17 +58,24 @@ class Soldier(pygame.sprite.Sprite):
         #variables para el disparo
         self.bullet_group = pygame.sprite.Group() #grupo para balas
         self.shoot = False
-        self.shoot_cooldown = 20
+        self.shoot_cooldown = 10
         self.ammo = ammo
         self.start_ammo = self.ammo
 
         #variables para granada
         self.grenade = False
         self.grenade_group = pygame.sprite.Group()        
+
         self.grenade_cooldown = 50
         self.ammo_grenade = ammo_grenade
         self.start_ammo_grenade = self.ammo_grenade
-        
+
+        # Munición de disparos de fuego
+        self.ammo_fire = 5
+        self.start_ammo_fire = self.ammo_fire
+        self.fire_shoot = False
+        self.fire_icon = pygame.image.load('img/tile/21.png').convert_alpha()
+        self.fire_icon = pygame.transform.scale(self.fire_icon, (32, 32))
 
         self.animation_types = ["Idle", "Run", "Jump", "Death"] #tipos de animaciones
 
@@ -77,9 +105,6 @@ class Soldier(pygame.sprite.Sprite):
 
         self.width = self.image.get_width()
         self.height = self.image.get_height()
-
-    #actualizamos la animacion
-    def update_animation(self):
         #duracion entre cada fotograma
         self.ANIMATION_COOLDOWN = 100
 
@@ -124,12 +149,23 @@ class Soldier(pygame.sprite.Sprite):
                 self.update_action(1)   #run
                 presionando_tecla = True
 
-            if self.jump and self.in_air==False:  #brincando
-                self.vel_y = -11 
-                self.jump = False
-                self.update_action(2)   #jump
-                presionando_tecla = True    
-                self.in_air = True            
+            # Salto simple o doble salto
+            if self.jump:
+                if not self.in_air:
+                    # Salto normal desde el suelo
+                    self.vel_y = -11
+                    self.jump = False
+                    self.update_action(2)   #jump
+                    presionando_tecla = True
+                    self.in_air = True
+                    self.double_jump_available = True  # Al saltar desde el suelo, doble salto disponible
+                elif self.double_jump_available:
+                    # Doble salto en el aire
+                    self.vel_y = -11
+                    self.jump = False
+                    self.update_action(2)   #jump
+                    presionando_tecla = True
+                    self.double_jump_available = False  # Solo se puede usar una vez hasta tocar el suelo
             
             if presionando_tecla==False:
                 self.update_action(0)   #idle 
@@ -155,6 +191,7 @@ class Soldier(pygame.sprite.Sprite):
                 elif self.vel_y >= 0:
                     self.vel_y = 0
                     self.in_air = False
+                    self.double_jump_available = True  # Al aterrizar, se puede volver a hacer doble salto
                     dy = tile[1].top - self.rect.bottom
 
         # colisiones con agua
@@ -187,30 +224,50 @@ class Soldier(pygame.sprite.Sprite):
         if self.demo==False:
             #presionando teclado
             if event.type==pygame.KEYDOWN:
-                if event.key==pygame.K_a:
+                if event.key==pygame.K_LEFT:
                     self.moving_left = True
-                if event.key==pygame.K_d:
+                    self.shoot_dir_x = -1
+                if event.key==pygame.K_RIGHT:
                     self.moving_right = True
-                if event.key==pygame.K_w:
-                    self.jump = True  
+                    self.shoot_dir_x = 1
+                if event.key==pygame.K_z:
+                    self.jump = True
                     self.escenario.music.jump_fx.play()
-                if event.key==pygame.K_SPACE:
-                    self.shoot = True                    
-                if event.key==pygame.K_q:
-                    self.grenade = True            
+                if event.key==pygame.K_UP:
+                    self.shoot_dir_y = -1
+                if event.key==pygame.K_DOWN:
+                    self.shoot_dir_y = 1
+                if event.key==pygame.K_c:
+                    self.shoot = True
+                if event.key==pygame.K_a:
+                    self.fire_shoot = True
+                if event.key==pygame.K_x:
+                    self.grenade = True
 
             #liberando teclado
             if event.type==pygame.KEYUP:
-                if event.key==pygame.K_a:
+                if event.key==pygame.K_LEFT:
                     self.moving_left = False
-                if event.key==pygame.K_d:
+                    if self.shoot_dir_x == -1:
+                        self.shoot_dir_x = 0
+                if event.key==pygame.K_RIGHT:
                     self.moving_right = False
-                if event.key==pygame.K_w:
+                    if self.shoot_dir_x == 1:
+                        self.shoot_dir_x = 0
+                if event.key==pygame.K_z:
                     self.jump = False
-                if event.key==pygame.K_SPACE:
-                    self.shoot = False 
-                if event.key==pygame.K_q:
-                    self.grenade = False 
+                if event.key==pygame.K_UP:
+                    if self.shoot_dir_y == -1:
+                        self.shoot_dir_y = 0
+                if event.key==pygame.K_DOWN:
+                    if self.shoot_dir_y == 1:
+                        self.shoot_dir_y = 0
+                if event.key==pygame.K_c:
+                    self.shoot = False
+                if event.key==pygame.K_a:
+                    self.fire_shoot = False
+                if event.key==pygame.K_x:
+                    self.grenade = False
 
     #acccion disparar
     def update_shoot(self):    
@@ -219,10 +276,26 @@ class Soldier(pygame.sprite.Sprite):
         if self.shoot_cooldown > 0:
             self.shoot_cooldown -= 1
 
+
+        # Disparo de fuego con la tecla A
+        if self.fire_shoot and self.shoot_cooldown==0 and self.ammo_fire>0:
+            self.shoot_cooldown = 15
+            from FireBullet import FireBullet
+            dir_x = self.shoot_dir_x if self.shoot_dir_x != 0 else self.direction
+            dir_y = self.shoot_dir_y
+            fire_bullet = FireBullet(self.escenario, self.rect.centerx + (0.6*self.rect.size[0]*dir_x), self.rect.centery, dir_x)
+            self.bullet_group.add(fire_bullet)
+            self.ammo_fire -= 1
+            # Reproducir sonido de lanzallamas solo si no está ya sonando
+            if not self.escenario.music.fuego_fx.get_num_channels():
+                self.escenario.music.fuego_fx.play(-1)
+
         #si temporizador paso 20 ciclos y hay balas,entonces agregamos una nueva bala
-        if self.shoot and self.shoot_cooldown==0 and self.ammo>0: 
-            self.shoot_cooldown = 20            
-            bullet = Bullet(self.escenario, self.rect.centerx + (0.6*self.rect.size[0]*self.direction), self.rect.centery, self.direction, self)
+        if self.shoot and self.shoot_cooldown==0 and self.ammo>0:
+            self.shoot_cooldown = 10
+            dir_x = self.shoot_dir_x if self.shoot_dir_x != 0 else self.direction
+            dir_y = self.shoot_dir_y
+            bullet = Bullet(self.escenario, self.rect.centerx + (0.6*self.rect.size[0]*dir_x), self.rect.centery, (dir_x, dir_y), self)
             self.bullet_group.add(bullet)
             self.ammo -= 1
             self.escenario.music.shoot_fx.play()
@@ -230,7 +303,17 @@ class Soldier(pygame.sprite.Sprite):
         #actualizamos cada bala
         self.bullet_group.update()
         #pintamos cada bala
-        self.bullet_group.draw(self.escenario.screen) 
+        self.bullet_group.draw(self.escenario.screen)
+
+        # Mostrar cantidad de granadas (ya existente)
+        # Mostrar texto y cantidad de munición de fuego debajo de granadas
+        font = pygame.font.SysFont('arial', 24)
+        fuego_label = font.render('Fuego', True, (255, 120, 0))
+        fuego_x = 80
+        fuego_y = 80  # Debajo de granadas
+        self.escenario.screen.blit(fuego_label, (fuego_x, fuego_y))
+        fire_text = font.render(str(self.ammo_fire), True, (255, 255, 255))
+        self.escenario.screen.blit(fire_text, (fuego_x + 80, fuego_y))
        
 
     def update_grenade(self):
@@ -264,18 +347,24 @@ class Soldier(pygame.sprite.Sprite):
 
 
     def update(self):
-
         if self.TIME_DEATH_COOLDOWN>0: 
             self.update_animation() #actualizamos la animacion del monito
-
             self.check_alive() #verificamos si estamos vivos
             self.update_shoot() #verificamos los disparos
             self.update_grenade() #verificamos las granadas
-            
             self.move() #movemos a las nuevas coordenadas
         else:
             if self.demo==False:
                 self.escenario.mainMenu.updateRestart()
                 self.kill()
-        
-        self.escenario.screen.blit(pygame.transform.flip(self.image, self.flip, False), self.rect) #pinta al monito en la pantalla
+        # Pintar al monito en la pantalla
+        self.escenario.screen.blit(pygame.transform.flip(self.image, self.flip, False), self.rect)
+        # Mostrar cantidad de granadas y munición de fuego
+        font = pygame.font.SysFont('arial', 24)
+        # Aquí asumo que el contador de granadas ya se muestra arriba (no se modifica)
+        fuego_label = font.render('Fuego', True, (255, 120, 0))
+        fuego_x = 80
+        fuego_y = 80  # Debajo de granadas
+        self.escenario.screen.blit(fuego_label, (fuego_x, fuego_y))
+        fire_text = font.render(str(self.ammo_fire), True, (255, 255, 255))
+        self.escenario.screen.blit(fire_text, (fuego_x + 80, fuego_y))
