@@ -25,6 +25,10 @@ class Explosion(pygame.sprite.Sprite):
         self.counter = 0
         self.screen = self.escenario.screen
         self.escenario.music.grenade_fx.play()
+        # Efecto de destello blanco
+        self.flash_surface = pygame.Surface((int(120*scale), int(120*scale)), pygame.SRCALPHA)
+        pygame.draw.circle(self.flash_surface, (255,255,255,120), (self.flash_surface.get_width()//2, self.flash_surface.get_height()//2), int(60*scale))
+        self.flash_counter = 0
         # Crear partículas de fuego (más densas y menos dispersas)
         for _ in range(420):
             angle = random.uniform(0, 2 * math.pi)
@@ -68,6 +72,11 @@ class Explosion(pygame.sprite.Sprite):
         # Solo dibujar la animación si no es Surface vacío
         if self.frame_index < len(self.images):
             self.screen.blit(self.image, self.rect)
+        # Dibujar destello blanco solo en los primeros frames
+        if self.flash_counter < 7:
+            flash_rect = self.flash_surface.get_rect(center=self.rect.center)
+            self.screen.blit(self.flash_surface, flash_rect)
+            self.flash_counter += 1
         # Dibujar partículas de fuego y humo
         for particle in self.particles:
             self.screen.blit(particle.image, particle.rect)

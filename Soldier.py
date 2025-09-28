@@ -43,7 +43,7 @@ class Soldier(pygame.sprite.Sprite):
         #variables relacionadas al brinco
         self.jump = False #esta brincando
         self.vel_y = 0 #velocidad de brinco
-        self.gravity = 0.75
+        self.gravity = 0.65  # gravedad reducida para salto más largo
         self.in_air = True
         self.double_jump_available = True  # Permite doble salto
 
@@ -153,7 +153,7 @@ class Soldier(pygame.sprite.Sprite):
             if self.jump:
                 if not self.in_air:
                     # Salto normal desde el suelo
-                    self.vel_y = -11
+                    self.vel_y = -13  # salto más largo
                     self.jump = False
                     self.update_action(2)   #jump
                     presionando_tecla = True
@@ -161,7 +161,7 @@ class Soldier(pygame.sprite.Sprite):
                     self.double_jump_available = True  # Al saltar desde el suelo, doble salto disponible
                 elif self.double_jump_available:
                     # Doble salto en el aire
-                    self.vel_y = -11
+                    self.vel_y = -13  # doble salto más largo
                     self.jump = False
                     self.update_action(2)   #jump
                     presionando_tecla = True
